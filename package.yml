@@ -1,0 +1,19 @@
+# Alle hier gesetzten Werte können über `$addon->getProperty($key)` abgefragt werden
+
+package: nv_modulesettings # Pflichtfeld
+version: '1.0.0' # Pflichtfeld
+author: novinet GmbH & Co KG
+supportpage: https://novinet.de
+
+    
+# Abhängigkeiten
+# Anforderungen ans System oder anderere AddOns, um dieses AddOn installieren oder update zu können
+requires:
+    redaxo: '^5.5' # benötigt mindestens REDAXO 5.5
+    packages:
+        media_manager: '^2.0.1' # benötigt mindestens das Addon Media Manager 2.0.1
+        mform: '^5.3.1' # benötigt mindestens das Addon MForm 5.3.1
+        mblock: '^3.1.0' # benötigt mindestens das Addon MBlock 3.1.0
+    php:
+        version: '>=5.6' # benötigt mindestens PHP 5.6
+

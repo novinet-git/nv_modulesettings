@@ -1,0 +1,267 @@
+{
+	"defaultOptions" : [
+		"fieldsetSlice","sliceType", "sliceBgColor", "sliceBgImage", "marginTop", "marginBottom", "paddingTop", "paddingBottom","paddingX","sliceClass","fieldsetContent", "colWidth", "colAlign"
+	],
+	"options": [
+		{
+			"key": "fieldsetSlice",
+			"label": "Block",
+			"type": "fieldset"
+		},
+		{
+			"key": "fieldsetContent",
+			"label": "Inhalt",
+			"type": "fieldset"
+		},
+		{
+			"key": "sliceType",
+			"label": "Block Typ",
+			"type": "select",
+			"placeholder": "Test",
+			"data": {
+				"container": "Container",
+				"container-fluid": "Container Fluid",
+				"nv-full-width": "100% ohne Rand"
+			},
+			"default": "container"
+		},
+		{
+			"key": "sliceBgColor",
+			"label": "Block Hintergrundfarbe",
+			"type": "select",
+			"data": {
+				"nv-bg-none": "Kein",
+				"nv-bg-white": "Weiß",
+				"nv-bg-blue": "Blau",
+				"nv-bg-grey": "Grau"
+			},
+			"default": "nv-bg-none"
+		},
+		{
+			"key": "sliceBgImage",
+			"label": "Block Hintergrundbild",
+			"type": "media"
+		},
+		{
+			"key": "bgColor",
+			"label": "Inhalt Hintergrundfarbe",
+			"type": "select",
+			"data": {
+				"nv-bg-none": "Kein",
+				"nv-bg-white": "Weiß",
+				"nv-bg-blue": "Blau",
+				"nv-bg-grey": "Grau"
+			},
+			"default": "nv-bg-none"
+		},
+		{
+			"key": "bgImage",
+			"label": "Inhalt Hintergrundbild",
+			"type": "media"
+		},
+		{
+			"key": "sliceClass",
+			"label": "Block Klasse",
+			"placeholder": "BeispielKlasse",
+			"type": "text"
+		},
+		{
+			"key": "marginTop",
+			"label": "Block Außenabstand Oben",
+			"type": "select",
+			"data": {
+				"mt-0": "Kein",
+				"mt-1": "Sehr klein",
+				"mt-2": "Klein",
+				"mt-3": "Mittel",
+				"mt-4": "Groß",
+				"mt-5": "Sehr groß"
+			},
+			"default": "mt-0"
+		},
+		{
+			"key": "marginBottom",
+			"label": "Block Außenabstand Unten",
+			"type": "select",
+			"data": {
+				"mb-0": "Kein",
+				"mb-1": "Sehr klein",
+				"mb-2": "Klein",
+				"mb-3": "Mittel",
+				"mb-4": "Groß",
+				"mb-5": "Sehr groß"
+			},
+			"default": "mb-3"
+		},
+		{
+			"key": "paddingTop",
+			"label": "Block Innenabstand Oben",
+			"type": "select",
+			"data": {
+				"pt-0": "Kein",
+				"pt-1": "Sehr klein",
+				"pt-2": "Klein",
+				"pt-3": "Mittel",
+				"pt-4": "Groß",
+				"pt-5": "Sehr groß"
+			},
+			"default": "pt-0"
+		},
+		{
+			"key": "paddingBottom",
+			"label": "Block Innenabstand Unten",
+			"type": "select",
+			"data": {
+				"pb-0": "Kein",
+				"pb-1": "Sehr klein",
+				"pb-2": "Klein",
+				"pb-3": "Mittel",
+				"pb-4": "Groß",
+				"pb-5": "Sehr groß"
+			},
+			"default": "pb-0"
+		},
+		{
+			"key": "paddingVertical",
+			"label": "Block Innenabstand Horizontal",
+			"type": "select",
+			"data": {
+				"px-0": "Kein",
+				"px-1": "Sehr klein",
+				"px-2": "Klein",
+				"px-3": "Mittel",
+				"px-4": "Groß",
+				"px-5": "Sehr groß"
+			},
+			"default": "px-0"
+		},
+		{
+			"key": "paddingX",
+			"label": "Block Innenabstand Horizontal",
+			"type": "select",
+			"data": {
+				"px-0": "Kein",
+				"px-1": "Sehr klein",
+				"px-2": "Klein",
+				"px-3": "Mittel",
+				"px-4": "Groß",
+				"px-5": "Sehr groß"
+			},
+			"default": "px-0"
+		},
+		{
+			"key": "textAlign",
+			"label": "Text Ausrichtung",
+			"type": "select",
+			"data": {
+				"text-left": "Links",
+				"text-center": "Zentriert",
+				"text-right": "Rechts"
+			},
+			"default": "text-left"
+		},
+		{
+			"key": "textColor",
+			"label": "Textfarbe",
+			"type": "select",
+			"data": {
+				"nv-text-body": "Body",
+				"text-white": "Weiß",
+				"nv-text-blue": "Blau"
+			},
+			"default": "nv-text-body"
+		},
+		{
+			"key": "colWidth",
+			"label": "Inhalt Breite",
+			"type": "select",
+			"data": {
+				"col-lg-1": "1/12",
+				"col-lg-2": "2/12",
+				"col-lg-3": "3/12",
+				"col-lg-4": "4/12",
+				"col-lg-5": "5/12",
+				"col-lg-6": "6/12",
+				"col-lg-7": "7/12",
+				"col-lg-8": "8/12",
+				"col-lg-9": "9/12",
+				"col-lg-10": "10/12",
+				"col-lg-11": "11/12",
+				"col-lg-12": "12/12"
+			},
+			"default": "col-lg-10"
+		},
+		{
+			"key": "colAlign",
+			"label": "Inhalt Ausrichtung",
+			"type": "select",
+			"data": {
+				"justify-content-start": "Links",
+				"justify-content-center": "Zentriert",
+				"justify-content-end": "Rechts"
+			},
+			"default": "justify-content-center"
+		},
+		{
+			"key": "headlineTag",
+			"label": "Überschrift Größe",
+			"type": "select",
+			"data": {
+				"h1": "H1",
+				"h2": "H2",
+				"h3": "H3",
+				"h4": "H4",
+				"h5": "H5",
+				"h6": "H6"
+			},
+			"default": "h2"
+		},
+		{
+			"key": "linkTarget",
+			"label": "Link öffnen in",
+			"type": "select",
+			"data": {
+				"_top": "Gleiches Fenster",
+				"_blank": "Neues Fenster"
+			},
+			"default": "_top"
+		},
+		{
+			"key": "justifyContent",
+			"label": "Spalten anordnen",
+			"type": "select",
+			"data": {
+				"d-flex justify-content-start": "Linksbündig",
+				"d-flex justify-content-end": "Rechtsbündig",
+				"d-flex justify-content-center": "Zentriert",
+				"d-flex justify-content-between": "Mit Innenabstand",
+				"d-flex justify-content-around": "Mit Innen- und Außenabstand"
+			},
+			"default": "d-flex justify-content-start"
+		},
+		{
+			"key": "spaceBetweenCols",
+			"label": "Spalten Abstand zueinander",
+			"type": "select",
+			"data": {
+				"0": "Nein",
+				"1": "Ja"
+			},
+			"default": "0"
+		},
+		{
+			"key": "rowCols",
+			"label": "Elemente pro Reihe",
+			"type": "select",
+			"data": {
+				"1": "1",
+				"2": "2",
+				"3": "3",
+				"4": "4",
+				"5": "5",
+				"6": "6"
+			},
+			"default": "3"
+		}
+	]
+}
