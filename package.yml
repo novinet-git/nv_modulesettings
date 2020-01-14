@@ -11,9 +11,10 @@ supportpage: https://github.com/novinet-git/nv_modulesettings
 requires:
     redaxo: '^5.5' # benötigt mindestens REDAXO 5.5
     packages:
-        media_manager: '^2.0.1' # benötigt mindestens das Addon Media Manager 2.0.1
         mform: '^5.3.1' # benötigt mindestens das Addon MForm 5.3.1
         mblock: '^3.1.0' # benötigt mindestens das Addon MBlock 3.1.0
+        theme: '^1.1.1' # benötigt mindestens das Addon Theme 1.1.1
+        developer: '^3.8.0' # benötigt mindestens das Addon Developer 3.8.0
     php:
         version: '>=5.6' # benötigt mindestens PHP 5.6
 
