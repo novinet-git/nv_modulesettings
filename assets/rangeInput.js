@@ -1,34 +1,102 @@
-var getRangeData = function(element)
+var getRangeData = function(element, all)
 {
     var value = element.value;
     var data = element.getAttribute("data-values").split(";");
-    if (!data || data.length < value) return;
-    value = data[value];
-    var split = value.split(",")
-    var key = split[0];
-    var label = split[1];
-    return {
-        key: key,
-        label: label
+
+    if (!all)
+    {
+      
+        
+        if (!data || data.length < value) return;
+        
+        value = data[value];
+        var split = value.split(",")
+        var key = split[0];
+        var label = split[1];
+       
+        return {
+            key: key,
+            label: label
+        }
+    }
+    else
+    {
+        result = [];
+
+        if (!data) return;
+
+        var length = data.length;
+
+        for (var i = 0; i < length; i++) 
+        {
+            var value  = data[i];
+            var split = value.split(",")
+            var key = split[0];
+            var label = split[1];
+
+            result.push({
+                key: key,
+                label: label
+            });
+
+        }
+
+        return result;
     }
 }
 
-var setRangeHiddenValue = function(element)
+
+var getRangeValueToKeyValue = function(element, key)
 {
-    var data = getRangeData(element);
+    var data = getRangeData(element, true);
+    var length = data.length;
+
+    for (var i = 0; i < length; i++)
+    {
+        var item = data[i];
+
+        if (item.key == key)
+        {
+            return i;
+        }
+    }
+
+    return false;
+}
+
+var isRangeFieldNotSyncWidthHiddenValueField = function(element)
+{
+    var hiddenInput = getRangeHiddenValueField(element);
+    if (!hiddenInput) return;
+
+    var index = getRangeValueToKeyValue(element, hiddenInput.value);
+    
+    return index == element.value;
+
+}
+
+
+var getRangeHiddenValueField = function(element)
+{
     var name = element.name;
     var split = name.split("_range");
     name = split.join("");
-    var hiddenInput = document.querySelector('[name="'+name+'"]');
-    
+    return document.querySelector('[name="'+name+'"]');
+}       
+
+var setRangeHiddenValue = function(element)
+{
+    var data = getRangeData(element,false);
+    var hiddenInput = getRangeHiddenValueField(element);
     if (!hiddenInput) return;
     hiddenInput.value = data.key;
 }
 
 var setRangeLabel = function(element)
 {
-    var data = getRangeData(element);
+    var data = getRangeData(element,false);
     var label = document.getElementById(element.labelid);
+    if (!label) return;
     label.innerText = data.label;
     setRangeHiddenValue(element);
 }
@@ -41,6 +109,13 @@ var checkRangeValue = function(element)
         var def = parseInt(element.getAttribute("data-default"));
         element.value = def;
         element.setAttribute("value", def);
+    }
+
+    if (!isRangeFieldNotSyncWidthHiddenValueField(element))
+    {
+        var hiddenInput = getRangeHiddenValueField(element);
+        if (!hiddenInput) return;
+        element.value = getRangeValueToKeyValue(element, hiddenInput.value);
     }
 }
 
