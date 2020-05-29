@@ -200,7 +200,6 @@
                     case "range":
                         $aData = $this->getSelectData($sKey);
                         $sDataDefault = $this->getDefault($sKey);
-                        $iDefault = null;
                         $i = 0;
                         $aKeyValue = [];
                         foreach ($aData as $key => $value)
@@ -208,8 +207,7 @@
                             if (!$key) continue;
                             if ($key == $sDataDefault)
                             {
-                                $iDefault = $i;
-                                $value = $value . "(Standard)";
+                                $value = $value . " (Standard)";
                             }
                             $aKeyValue[] = $key . ',' . $value;
                             $i++;
@@ -219,7 +217,7 @@
                         $iMax = $iLength - 1;
                         $sData = implode(";", $aKeyValue);
 
-                        $this->mf->addElement("range", $this->iSettingsId . ".0." . $sKey . "_range", NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $iDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
+                        $this->mf->addElement("range", $this->iSettingsId . ".0." . $sKey . "_range", NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $sDataDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
                         $this->mf->addHiddenField($this->iSettingsId . ".0." . $sKey);
                         break;
                 }

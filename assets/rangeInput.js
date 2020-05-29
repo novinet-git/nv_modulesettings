@@ -46,6 +46,8 @@ var getRangeData = function(element, all)
 }
 
 
+
+
 var getRangeValueToKeyValue = function(element, key)
 {
     var data = getRangeData(element, true);
@@ -62,6 +64,14 @@ var getRangeValueToKeyValue = function(element, key)
     }
 
     return false;
+}
+
+var setRangeDefault = function(element)
+{
+    var defaultKey = element.getAttribute("data-default");
+    var value = getRangeValueToKeyValue(element, defaultKey);
+    element.value = value
+    element.setAttribute("value", value);
 }
 
 var isRangeFieldNotSyncWidthHiddenValueField = function(element)
@@ -106,12 +116,9 @@ var checkRangeValue = function(element)
     var attrVal = element.getAttribute("value");
     if (attrVal == "")
     {
-        var def = parseInt(element.getAttribute("data-default"));
-        element.value = def;
-        element.setAttribute("value", def);
-    }
-
-    if (!isRangeFieldNotSyncWidthHiddenValueField(element))
+        setRangeDefault(element);
+    } 
+    else if (!isRangeFieldNotSyncWidthHiddenValueField(element))
     {
         var hiddenInput = getRangeHiddenValueField(element);
         if (!hiddenInput) return;
