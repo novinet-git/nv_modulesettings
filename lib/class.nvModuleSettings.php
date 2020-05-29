@@ -200,7 +200,6 @@
                     case "range":
                         $aData = $this->getSelectData($sKey);
                         $sDataDefault = $this->getDefault($sKey);
-                        $aLabels = [];
                         $iDefault = null;
                         $i = 0;
                         $aKeyValue = [];
