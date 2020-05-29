@@ -200,7 +200,6 @@
                     case "range":
                         $aData = $this->getSelectData($sKey);
                         $sDataDefault = $this->getDefault($sKey);
-                        $i = 0;
                         $aKeyValue = [];
                         foreach ($aData as $key => $value)
                         {
@@ -210,7 +209,6 @@
                                 $value = $value . " (Standard)";
                             }
                             $aKeyValue[] = $key . ',' . $value;
-                            $i++;
                         }
 
                         $iLength = count($aKeyValue);
