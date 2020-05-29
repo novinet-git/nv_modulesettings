@@ -1,11 +1,36 @@
-var setRangeLabel = function(element)
+var getRangeData = function(element)
 {
     var value = element.value;
-    var label = document.getElementById(element.labelid);
     var data = element.getAttribute("data-values").split(";");
     if (!data || data.length < value) return;
     value = data[value];
-    label.innerText = value;
+    var split = value.split(",")
+    var key = split[0];
+    var label = split[1];
+    return {
+        key: key,
+        label: label
+    }
+}
+
+var setRangeHiddenValue = function(element)
+{
+    var data = getRangeData(element);
+    var name = element.name;
+    var split = name.split("_range");
+    name = split.join("");
+    var hiddenInput = document.querySelector('[name="'+name+'"]');
+    
+    if (!hiddenInput) return;
+    hiddenInput.value = data.key;
+}
+
+var setRangeLabel = function(element)
+{
+    var data = getRangeData(element);
+    var label = document.getElementById(element.labelid);
+    label.innerText = data.label;
+    setRangeHiddenValue(element);
 }
 
 var checkRangeValue = function(element)

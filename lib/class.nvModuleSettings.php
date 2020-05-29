@@ -203,6 +203,7 @@
                         $aLabels = [];
                         $iDefault = null;
                         $i = 0;
+                        $aKeyValue = [];
                         foreach ($aData as $key => $value)
                         {
                             if (!$key) continue;
@@ -211,15 +212,16 @@
                                 $iDefault = $i;
                                 $value = $value . "(Standard)";
                             }
-                            $aLabels[] = $value;
+                            $aKeyValue[] = $key . ',' . $value;
                             $i++;
                         }
 
-                        $iLength = count($aLabels);
+                        $iLength = count($aKeyValue);
                         $iMax = $iLength - 1;
-                        $sData = implode(";", $aLabels);
+                        $sData = implode(";", $aKeyValue);
 
-                        $this->mf->addElement("range", $this->iSettingsId . ".0." . $sKey, NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $iDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
+                        $this->mf->addElement("range", $this->iSettingsId . ".0." . $sKey . "_range", NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $iDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
+                        $this->mf->addHiddenField($this->iSettingsId . ".0." . $sKey);
                         break;
                 }
             }
@@ -256,38 +258,6 @@
             {
                 $oData->{$sKey} = $aArr["REX_MEDIA_" . $iSettingsId] ? MEDIA . $aArr["REX_MEDIA_" . $iSettingsId] : "";
             }
-            else if ($aOptions["type"] == "range")
-            {
-                if ($aArr[$sKey] == null)
-                {
-                    $oData->{$sKey} = $this->getDefault($sKey);
-                    continue;  
-                } 
-                
-                $aData = $this->getSelectData($sKey);
-                $i = 0;
-                $search = intval($aArr[$sKey]);
-                if (!$search)
-                {
-                    $oData->{$sKey} = $this->getDefault($sKey);
-                    continue;  
-                }
-
-                foreach ($aData as $key => $value)
-                {
-                    if ($i == $search)
-                    {
-                        $oData->{$sKey} = $key;
-                        break;
-                    }
-                }
-
-                if (!$oData->{$sKey})
-                {
-                    $oData->{$sKey} = $this->getDefault($sKey);
-                }
-
-            } 
             else 
             {
                 $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefault($sKey);
