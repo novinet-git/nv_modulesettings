@@ -162,14 +162,14 @@
         return $this->aSettings["contentOptions"];
     }
 
-    function getOptionLabel($sKey,$sValue) {
+    function getOptionLabel($sKey, $sValue)
+    {
         return $this->aSettings["options"][$sKey]["selectdata"][$sValue];
     }
 
     public function getForm($sLabel = "Weitere Optionen")
     {
         $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
-
         $this->mf = new MForm();
         $this->mf->addHtml('<a href="javascript:void(0)" class="btn btn-abort w-100 text-center nv-modulesettings-toggler" data-id="#nv-modulesettings-' . $iBlockId . '" style="width:100%"><strong><span class = "caret"></span> &nbsp; ' . $sLabel . '</strong> &nbsp; <span class = "caret"></span></a>');
         $this->mf->addHtml('<div id="nv-modulesettings-' . $iBlockId . '" style="border: 1px solid #c1c9d4;border-top:none; padding: 20px;display:none"><br>');
@@ -177,48 +177,7 @@
         foreach ($this->aSettings["defaultOptions"] as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
-                switch ($aOption["type"]) {
-                    default:
-                    case "select":
-                        $aData = $this->getSelectData($sKey);
-
-                        $this->mf->addSelectField($this->iSettingsId . ".0." . $sKey, $aData, ["label" => $aOption["label"]]);
-                        break;
-
-                    case "text":
-                        $this->mf->addTextField($this->iSettingsId . ".0." . $sKey, ["label" => $aOption["label"], "placeholder" => $aOption["placeholder"]]);
-                        break;
-
-                    case "media":
-                        $this->mf->addMediaField($this->iSettingsId, ["label" => $aOption["label"]]);
-                        break;
-
-                    case "fieldset":
-                        $this->mf->addTab($aOption["label"]);
-                        break;
-
-                    case "range":
-                        $aData = $this->getSelectData($sKey);
-                        $sDataDefault = $this->getDefault($sKey);
-                        $aKeyValue = [];
-                        foreach ($aData as $key => $value)
-                        {
-                            if (!$key) continue;
-                            if ($key == $sDataDefault)
-                            {
-                                $value = $value . " (Standard)";
-                            }
-                            $aKeyValue[] = $key . ',' . $value;
-                        }
-
-                        $iLength = count($aKeyValue);
-                        $iMax = $iLength - 1;
-                        $sData = implode(";", $aKeyValue);
-
-                        $this->mf->addElement("range", $this->iSettingsId . ".0." . $sKey . "_range", NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $sDataDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
-                        $this->mf->addHiddenField($this->iSettingsId . ".0." . $sKey);
-                        break;
-                }
+                $this->mf = $this->getFormField($aOption, $sKey, $this->mf,$this->iSettingsId);
             }
         }
 
@@ -239,6 +198,71 @@
         return $sForm;
     }
 
+    public function getContentForm($oMform, $iId)
+    {
+
+        foreach ($this->aSettings["contentOptions"] as $sKey) {
+            $aOption = $this->aSettings["options"][$sKey];
+            if ($aOption) {
+                $oMform = $this->getFormField($aOption, $sKey, $oMform,$iId);
+            }
+        }
+        return $oMform;
+    }
+
+    public function getFormField($aOption, $sKey, $oMform,$iId)
+    {
+        switch ($aOption["type"]) {
+            default:
+            case "select":
+                $aData = $this->getSelectData($sKey);
+
+                $oMform->addSelectField($iId . ".0." . $sKey, $aData, ["label" => $aOption["label"]]);
+                return $oMform;
+                break;
+
+            case "text":
+                $oMform->addTextField($iId . ".0." . $sKey, ["label" => $aOption["label"], "placeholder" => $aOption["placeholder"]]);
+                return $oMform;
+                break;
+
+            case "media":
+                $oMform->addMediaField($iId, ["label" => $aOption["label"]]);
+                return $oMform;
+                break;
+
+            case "fieldset":
+                $oMform->addTab($aOption["label"]);
+                return $oMform;
+                break;
+
+            case "range":
+                $aData = $this->getSelectData($sKey);
+                $sDataDefault = $this->getDefault($sKey);
+                $aKeyValue = [];
+                foreach ($aData as $key => $value) {
+                    if (!$key) continue;
+                    if ($key == $sDataDefault) {
+                        $value = "Automatisch (".$value.")";
+                        $aKeyValue[] = ',' . $value;
+                    }
+                }
+                foreach ($aData as $key => $value) {
+                    if (!$key) continue;
+                    $aKeyValue[] = $key . ',' . $value;
+                }
+
+                $iLength = count($aKeyValue);
+                $iMax = $iLength - 1;
+                $sData = implode(";", $aKeyValue);
+
+                $oMform->addElement("range", $iId . ".0." . $sKey . "_range", NULL, ["label" => $aOption["label"], "min" => 0, "max" => $iMax, "data-values" => $sData, "data-default" => $sDataDefault, "class" => "nv-range-listener",  "oninput" => "onRangeInput()"]);
+                $oMform->addHiddenField($iId . ".0." . $sKey);
+                return $oMform;
+                break;
+        }
+    }
+
     public function parseSettings($aArr, $iSettingsId = 0)
     {
         if (!$iSettingsId) {
@@ -246,15 +270,11 @@
         }
 
         $oData = new stdClass();
-        foreach ($this->aSettings["defaultOptions"] as $sKey) 
-        {
+        foreach ($this->aSettings["defaultOptions"] as $sKey) {
             $aOptions = $this->getOptions($sKey);
-            if ($aOptions["type"] == "media") 
-            {
+            if ($aOptions["type"] == "media") {
                 $oData->{$sKey} = $aArr["REX_MEDIA_" . $iSettingsId] ? MEDIA . $aArr["REX_MEDIA_" . $iSettingsId] : "";
-            }
-            else 
-            {
+            } else {
                 $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefault($sKey);
             }
         }
@@ -282,18 +302,25 @@
     function getSelectData($sKey)
     {
         $aOption = $this->aSettings["options"][$sKey];
+        foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
+            if ($sOptionsKey === "") {
+                if (rex::isBackend()) {
+                    throw new rex_exception("nvModuleSettings: empty data key in option ".$sKey);
+                }
+            }
+        }
+
         if (isset($aOption["default"])) {
             foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
-
                 if ($sOptionsKey == "" && $aOption["default"] == "") {
                     $aDefaultData = array(
-                        "" => "Standard (" . $sOptionsVal . ")",
+                        "" => "Automatisch (" . $sOptionsVal . ")",
                     );
                     unset($aOption["data"][$sOptionsKey]);
                 } else {
                     if ($sOptionsKey == $aOption["default"]) {
                         $aDefaultData = array(
-                            "" => "Standard (" . $sOptionsVal . ")",
+                            "" => "Automatisch (" . $sOptionsVal . ")",
                         );
                     }
                 }
@@ -301,7 +328,7 @@
         }
 
         if (count($aDefaultData)) {
-            foreach($aOption["data"] AS $sDataKey => $sDataVal) {
+            foreach ($aOption["data"] as $sDataKey => $sDataVal) {
                 $aDefaultData[$sDataKey] = $sDataVal;
             }
             $aData = $aDefaultData;
