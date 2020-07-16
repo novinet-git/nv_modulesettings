@@ -198,10 +198,13 @@
         return $sForm;
     }
 
-    public function getContentForm($oMform, $iId)
+    public function getContentForm($oMform, $iId,$aOptions=array())
     {
+        if (!count($aOptions)) {
+            $aOptions = $this->aSettings["contentOptions"];
+        }
 
-        foreach ($this->aSettings["contentOptions"] as $sKey) {
+        foreach ($aOptions as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
                 $oMform = $this->getFormField($aOption, $sKey, $oMform,$iId);
