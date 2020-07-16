@@ -200,6 +200,25 @@
 
     public function getContentForm($oMform, $iId,$aOptions=array())
     {
+
+        if (count($aOptions)) {
+            $aTmpOptions = array();
+            foreach($aOptions AS $sKey => $aOption) {
+                if (!is_array($aOption)) {                    
+                    array_push($aTmpOptions,$aOption);
+                } else {
+                    array_push($aTmpOptions,$sKey);
+                    $aOption["key"] = $sKey;
+                    if (!$aOption["type"]) {
+                        $aOption["type"] = "select";
+                    }
+                    $this->aSettings["options"][$sKey] = $aOption;
+                }
+            }
+            $aOptions = $aTmpOptions;
+        }
+
+
         if (!count($aOptions)) {
             $aOptions = $this->aSettings["contentOptions"];
         }
@@ -244,14 +263,10 @@
                 $sDataDefault = $this->getDefault($sKey);
                 $aKeyValue = [];
                 foreach ($aData as $key => $value) {
-                    if (!$key) continue;
-                    if ($key == $sDataDefault) {
-                        $value = "Automatisch (".$value.")";
-                        $aKeyValue[] = ',' . $value;
+                    if ($key === "") continue;
+                    if ($key == $sDataDefault && $sDataDefault != "") {
+                        array_unshift($aKeyValue,',' . "Automatisch (".$value.")");
                     }
-                }
-                foreach ($aData as $key => $value) {
-                    if (!$key) continue;
                     $aKeyValue[] = $key . ',' . $value;
                 }
 

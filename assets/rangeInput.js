@@ -79,8 +79,12 @@ var isRangeFieldNotSyncWidthHiddenValueField = function(element)
     var hiddenInput = getRangeHiddenValueField(element);
     if (!hiddenInput) return;
 
+    if (hiddenInput.value === "") {
+        var defaultKey = element.getAttribute("data-default"); 
+        var index = getRangeValueToKeyValue(element, defaultKey);
+    } else {
     var index = getRangeValueToKeyValue(element, hiddenInput.value);
-    
+    }
     return index == element.value;
 
 }
@@ -99,6 +103,11 @@ var setRangeHiddenValue = function(element)
     var data = getRangeData(element,false);
     var hiddenInput = getRangeHiddenValueField(element);
     if (!hiddenInput) return;
+    var defaultKey = element.getAttribute("data-default");
+    if (data.key == defaultKey) {
+        hiddenInput.value = '';
+        return;
+    }
     hiddenInput.value = data.key;
 }
 
