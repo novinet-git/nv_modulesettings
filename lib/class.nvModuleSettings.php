@@ -71,18 +71,17 @@
     /**
      * get the settings object
      * 
-     * @param bool $bParse false
-     * @param int $iParse 9
+     * @param array $aData
      * 
      * @return stdClass
      * @throws null
      * 
      */
 
-    public static function parse($iRexValue=9)
+    public static function parse($aData)
     {
         $oSettings = self::factory();
-        return $oSettings->parseSettings(rex_var::toArray("REX_VALUE[" . $iRexValue . "]")[0]);
+        return $oSettings->parseSettings($aData);
     }
 
 
