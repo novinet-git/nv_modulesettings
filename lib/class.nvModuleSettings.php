@@ -41,7 +41,7 @@
 
         $aTrace = (new Exception())->getTrace();
 
-        foreach($aTrace as $aItem)
+        while(!$iModuleId && $aItem = array_shift($aTrace))
         {
             $sFile = $aItem["file"];
             $aFile = explode("/", $sFile);
