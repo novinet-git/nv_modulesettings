@@ -1,6 +1,12 @@
 <?php class nvModuleSettings
 {
-
+    /**
+     * construct a new module settings object
+     * 
+     * @param int $iModuleId null
+     * @return null
+     * @throws null
+     */
 
     public function __construct($iModuleId = null)
     {
@@ -16,6 +22,62 @@
 
         $this->getAllSettings();
     }
+
+    /**
+     * statically create the new module_settings object
+     * if no id given, it will automaticly find it out
+     * also works in fragments
+     * 
+     * @param int $iModuleId null
+     * 
+     * @return nvModuleSettings
+     * @throws rex_exception
+     * 
+     */
+
+    public static function factory($iModuleId = null)
+    {
+        if ($iModuleId) return new self($iModuleId);
+
+        $aTrace = (new Exception())->getTrace();
+
+        while($aItem = array_shift($aTrace))
+        {
+            $sFile = $aItem["file"];
+            $aFile = explode("/", $sFile);
+
+            foreach($aFile as $sPart)
+            {
+                if ($sPart == "module")
+                {
+                    foreach($aFile as $sPart)
+                    {
+                        if($iVal = intval($sPart))
+                        {
+                            $iModuleId = $iVal;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+            }
+            
+        }
+
+        if (!$iModuleId) throw new rex_exception("module id couldn´t been parsed");
+
+        return new self($iModuleId);
+    }
+
+
+    /**
+     * get all the settings from the object
+     * 
+     * @return array
+     * @throws null
+     * 
+     */
 
     function getAllSettings()
     {
@@ -58,6 +120,7 @@
         if (count($this->moduleData["defaultOptions"])) {
             $this->aSettings["defaultOptions"] = $this->moduleData["defaultOptions"];
         }
+
 
         if (count($this->moduleData["contentOptions"])) {
             $this->aSettings["contentOptions"] = $this->moduleData["contentOptions"];
@@ -141,7 +204,20 @@
                 }
             }
         }
+
+        return $this->aSettings;
     }
+
+
+    /**
+     * get the options to one key
+     * 
+     * @param string $sKey
+     * 
+     * @return array
+     * @throws null
+     * 
+     */
 
     public function getOptions($sKey)
     {
@@ -152,20 +228,58 @@
         return $this->aSettings["options"][$sKey];
     }
 
+    /**
+     * get the default value of one option
+     * 
+     * @param string $sKey
+     * 
+     * @return string
+     * @throws null
+     * 
+     */
+
     public function getDefault($sKey)
     {
         return $this->aSettings["options"][$sKey]["default"];
     }
+
+    /**
+     * get the content options as array of keys
+     * only works if you have defined them on 
+     * module stage
+     * 
+     * @return array
+     * @throws null
+     */
 
     function getContentOptions()
     {
         return $this->aSettings["contentOptions"];
     }
 
+    /**
+     * getOptionsLabel
+     * 
+     * @param string $sKey
+     * @param string $sValue
+     * 
+     * @return mixed
+     * @throws null
+     */
+
     function getOptionLabel($sKey, $sValue)
     {
         return $this->aSettings["options"][$sKey]["selectdata"][$sValue];
     }
+
+    /**
+     * get the form used in the input of the module
+     * @param string $sLabel  "Weitere Optionen"
+     * 
+     * @return string
+     * @throws null
+     * 
+     */
 
     public function getForm($sLabel = "Weitere Optionen")
     {
@@ -197,6 +311,17 @@
         $sForm .= '</script>';
         return $sForm;
     }
+
+    /**
+     * get the content options as form used in the input of the form
+     * 
+     * @param MForm $oMform
+     * @param int $iId
+     * @param array $aOptions array()
+     * 
+     * @return MForm
+     * @throws null
+     */
 
     public function getContentForm($oMform, $iId,$aOptions=array())
     {
@@ -231,6 +356,18 @@
         }
         return $oMform;
     }
+
+    /**
+     * add one field to the mform object and return it
+     * 
+     * @param array $aOption
+     * @param string $sKey
+     * @param MForm $oMform
+     * @param int $iId
+     * 
+     * @return MForm
+     * @throws null
+     */
 
     public function getFormField($aOption, $sKey, $oMform,$iId)
     {
@@ -281,6 +418,18 @@
         }
     }
 
+
+    /**
+     * parse one settigns array
+     * 
+     * @param array $aArr
+     * @param int $iSettingsId 0
+     * 
+     * @return array
+     * @throws null
+     * 
+     */
+
     public function parseSettings($aArr, $iSettingsId = 0)
     {
         if (!$iSettingsId) {
@@ -300,6 +449,17 @@
         return $oData;
     }
 
+    /**
+     * parse the content settings array
+     * 
+     * @param array $aArr
+     * @param int $iSettingsId 0
+     * 
+     * @return array
+     * @throws null
+     * 
+     */
+
     public function parseContentSettings($aArr, $iSettingsId = 0)
     {
         if (!$iSettingsId) {
@@ -316,6 +476,16 @@
         }
         return $oData;
     }
+
+    /**
+     * get the select data to key
+     * 
+     * @param string $sKey
+     * 
+     * @return array
+     * @throws rex_exeption
+     * 
+     */
 
     function getSelectData($sKey)
     {
