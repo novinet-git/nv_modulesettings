@@ -4,7 +4,7 @@
      * construct a new module settings object
      * 
      * @param int $iModuleId null
-     * @return null
+     * @return nvModuleSettings
      * @throws null
      */
 
