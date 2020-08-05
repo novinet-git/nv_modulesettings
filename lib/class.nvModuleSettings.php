@@ -41,28 +41,28 @@
 
         $aTrace = (new Exception())->getTrace();
 
-        while($aItem = array_shift($aTrace))
+        foreach($aTrace as $aItem)
         {
             $sFile = $aItem["file"];
             $aFile = explode("/", $sFile);
+            $length = count($aFile);
 
-            foreach($aFile as $sPart)
+            if ($length == 0) continue;
+
+            for ($i = 0; $i < $length; $i++)
             {
+                $sPart = $aFile[$i];
                 if ($sPart == "module")
                 {
-                    foreach($aFile as $sPart)
-                    {
-                        if($iVal = intval($sPart))
-                        {
-                            $iModuleId = $iVal;
-                            break;
-                        }
-                    }
+                    $sNext = $aFile[$i + 1];
 
-                    break;
+                    if($sNext && $iVal = intval($sNext))
+                    {
+                        $iModuleId = $iVal;
+                        break;
+                    }
                 }
             }
-            
         }
 
         if (!$iModuleId) throw new rex_exception("module id couldn´t been parsed");
