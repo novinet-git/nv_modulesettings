@@ -41,7 +41,7 @@
 
         $aTrace = (new Exception())->getTrace();
 
-        while(!$iModuleId && $aItem = array_shift($aTrace))
+        foreach($aTrace as $aItem)
         {
             $sFile = $aItem["file"];
             $aFile = explode("/", $sFile);
@@ -58,16 +58,46 @@
 
                     if($sNext && $iVal = intval($sNext))
                     {
-                        $iModuleId = $iVal;
-                        break;
+                        return new self($iVal);
                     }
                 }
             }
         }
 
         if (!$iModuleId) throw new rex_exception("module id couldn´t been parsed");
+    }
 
-        return new self($iModuleId);
+
+    /**
+     * get the settings object
+     * 
+     * @param bool $bParse false
+     * @param int $iParse 9
+     * 
+     * @return stdClass
+     * @throws null
+     * 
+     */
+
+    public static function parse($iRexValue=9)
+    {
+        $oSettings = self::factory();
+        return $oSettings->parseSettings(rex_var::toArray("REX_VALUE[" . $iRexValue . "]")[0]);
+    }
+
+
+    /**
+     * get the input form staticly
+     * 
+     * @return string
+     * @throws null
+     * 
+     */
+
+    public static function getInput()
+    {
+        $oSettings = self::factory();
+        return $oSettings->getForm();
     }
 
 
