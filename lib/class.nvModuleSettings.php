@@ -1,14 +1,24 @@
 <?php class nvModuleSettings
 {
     /**
+     * @var array $slices
+     */
+    public static $slices = [];
+
+    /**
+     * @var bool $build
+     */
+    public static $build = false;
+
+    /**
      * construct a new module settings object
      * 
      * @param int $iModuleId null
-     * @return nvModuleSettings
+     * @return null
      * @throws null
      */
 
-    public function __construct($iModuleId = null)
+    public function __construct(int $iModuleId = null)
     {
         $this->addon = rex_addon::get('nv_modulesettings');
         $this->fileCore = $this->addon->getPath('lib/settings.json');
@@ -35,7 +45,7 @@
      * 
      */
 
-    public static function factory($iModuleId = null)
+    public static function factory(int $iModuleId = null)
     {
         if ($iModuleId) return new self($iModuleId);
 
@@ -71,17 +81,49 @@
     /**
      * get the settings object
      * 
-     * @param array $aData
+     * @param mixed $aData []
      * 
      * @return stdClass
      * @throws null
      * 
      */
 
-    public static function parse($aData)
+    public static function parse($aData=[])
     {
         $oSettings = self::factory();
-        return $oSettings->parseSettings($aData);
+
+        if ($aData && is_array($aData))
+        {
+            return $oSettings->parseSettings($aData);
+        }
+
+        if (!self::$build)
+        {
+            self::$build = true;
+
+            $iArticleId = rex_article::getCurrentId();
+            if ($iArticleId)
+            {
+                nvModuleSettings::getSlicesForArticle($iArticleId);
+            }
+        }
+      
+        while($aData = array_shift(self::$slices))
+        {
+            if ($aData && $aData["module_id"] == $oSettings->iModuleId)
+            {
+                if ($aData["values"] && is_array($aData["values"]))
+                {
+                    return $oSettings->parseSettings($aData["values"]);
+                }
+                else 
+                {
+                    return $oSettings->parseSettings([]);
+                }
+            }
+        }
+      
+        return $oSettings->parseSettings([]);
     }
 
 
@@ -97,6 +139,38 @@
     {
         $oSettings = self::factory();
         return $oSettings->getForm();
+    }
+
+
+    /**
+     * build and the slices values for an article
+     * 
+     * @param int $iId
+     * @param int $iValueId 9
+     * 
+     * @return array
+     * @throws null
+     * 
+     */
+
+    public static function getSlicesForArticle(int $iId, int $iValueId = 9)
+    {
+        $oSql = rex_sql::factory();
+        $sQuery = "SELECT module_id, value" . $iValueId . " FROM rex_article_slice WHERE article_id=:id AND status='1' ORDER BY priority ASC";
+        $oSql->setQuery($sQuery, ["id" => $iId]);
+      
+        if (!$oSql->getRows()) return [];
+
+        foreach($oSql as $oRow)
+        {
+            self::$slices[] = 
+            [
+                "module_id" => $oRow->getValue("module_id"),
+                "values" => json_decode($oRow->getValue("value" . $iValueId), true)[0]
+            ];
+        }
+     
+        return self::$slices;
     }
 
 
@@ -248,7 +322,7 @@
      * 
      */
 
-    public function getOptions($sKey)
+    public function getOptions(string $sKey)
     {
         $aSelectData = $this->getSelectData($sKey);
         if (count($aSelectData)) {
@@ -267,7 +341,7 @@
      * 
      */
 
-    public function getDefault($sKey)
+    public function getDefault(string $sKey)
     {
         return $this->aSettings["options"][$sKey]["default"];
     }
@@ -296,7 +370,7 @@
      * @throws null
      */
 
-    function getOptionLabel($sKey, $sValue)
+    function getOptionLabel(string $sKey, string $sValue)
     {
         return $this->aSettings["options"][$sKey]["selectdata"][$sValue];
     }
@@ -310,7 +384,7 @@
      * 
      */
 
-    public function getForm($sLabel = "Weitere Optionen")
+    public function getForm(string $sLabel = "Weitere Optionen")
     {
         $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
         $this->mf = new MForm();
@@ -352,7 +426,7 @@
      * @throws null
      */
 
-    public function getContentForm($oMform, $iId,$aOptions=array())
+    public function getContentForm(MForm $oMform, int $iId, array $aOptions=array())
     {
 
         if (count($aOptions)) {
@@ -398,7 +472,7 @@
      * @throws null
      */
 
-    public function getFormField($aOption, $sKey, $oMform,$iId)
+    public function getFormField(array $aOption, string $sKey, MForm $oMform, int $iId)
     {
         switch ($aOption["type"]) {
             default:
@@ -459,7 +533,7 @@
      * 
      */
 
-    public function parseSettings($aArr, $iSettingsId = 0)
+    public function parseSettings(array $aArr, int $iSettingsId = 0)
     {
         if (!$iSettingsId) {
             $iSettingsId = $this->iSettingsId;
@@ -489,7 +563,7 @@
      * 
      */
 
-    public function parseContentSettings($aArr, $iSettingsId = 0)
+    public function parseContentSettings(array $aArr, int $iSettingsId = 0)
     {
         if (!$iSettingsId) {
             $iSettingsId = $this->iSettingsId;
@@ -516,7 +590,7 @@
      * 
      */
 
-    function getSelectData($sKey)
+    function getSelectData(string $sKey)
     {
         $aOption = $this->aSettings["options"][$sKey];
         foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
