@@ -47,20 +47,26 @@
         }
 
         // Defaults
-        if (count($this->coreData["defaultOptions"])) {
-            $this->aSettings["defaultOptions"] = $this->coreData["defaultOptions"];
+        if (isset($this->coreData["defaultOptions"])) {
+            if (count($this->coreData["defaultOptions"])) {
+                $this->aSettings["defaultOptions"] = $this->coreData["defaultOptions"];
+            }
         }
 
-        if (count($this->projectData["defaultOptions"])) {
-            $this->aSettings["defaultOptions"] = $this->projectData["defaultOptions"];
+        if (isset($this->projectData["defaultOptions"])) {
+            if (count($this->projectData["defaultOptions"])) {
+                $this->aSettings["defaultOptions"] = $this->projectData["defaultOptions"];
+            }
         }
-
-        if (count($this->moduleData["defaultOptions"])) {
-            $this->aSettings["defaultOptions"] = $this->moduleData["defaultOptions"];
+        if (isset($this->moduleData["defaultOptions"])) {
+            if (count($this->moduleData["defaultOptions"])) {
+                $this->aSettings["defaultOptions"] = $this->moduleData["defaultOptions"];
+            }
         }
-
-        if (count($this->moduleData["contentOptions"])) {
-            $this->aSettings["contentOptions"] = $this->moduleData["contentOptions"];
+        if (isset($this->moduleData["contentOptions"])) {
+            if (count($this->moduleData["contentOptions"])) {
+                $this->aSettings["contentOptions"] = $this->moduleData["contentOptions"];
+            }
         }
 
         // Additional Options Projekt & Module
@@ -102,7 +108,7 @@
 
         // Options
         $aUsedKeys = [];
-        if (count($this->coreData["options"])) {
+        if (isset($this->coreData["options"])) {
             foreach ($this->coreData["options"] as $aOption) {
                 $sKey = $aOption["key"];
                 $this->aSettings["options"][$sKey] = $aOption;
@@ -110,7 +116,7 @@
             }
         }
 
-        if (count($this->projectData["options"])) {
+        if (isset($this->projectData["options"])) {
             foreach ($this->projectData["options"] as $aOption) {
                 $sKey = $aOption["key"];
                 if (!in_array($sKey, $aUsedKeys)) {
@@ -126,7 +132,8 @@
             }
         }
 
-        if (count($this->moduleData["options"])) {
+
+        if (isset($this->moduleData["options"])) {
             foreach ($this->moduleData["options"] as $aOption) {
                 $sKey = $aOption["key"];
                 if (!in_array($sKey, $aUsedKeys)) {
@@ -146,7 +153,7 @@
     public function getOptions($sKey)
     {
         $aSelectData = $this->getSelectData($sKey);
-        if (count($aSelectData)) {
+        if (isset($aSelectData)) {
             $this->aSettings["options"][$sKey]["selectdata"] = $aSelectData;
         }
         return $this->aSettings["options"][$sKey];
@@ -177,7 +184,7 @@
         foreach ($this->aSettings["defaultOptions"] as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
-                $this->mf = $this->getFormField($aOption, $sKey, $this->mf,$this->iSettingsId);
+                $this->mf = $this->getFormField($aOption, $sKey, $this->mf, $this->iSettingsId);
             }
         }
 
@@ -198,16 +205,16 @@
         return $sForm;
     }
 
-    public function getContentForm($oMform, $iId,$aOptions=array())
+    public function getContentForm($oMform, $iId, $aOptions = array())
     {
 
         if (count($aOptions)) {
             $aTmpOptions = array();
-            foreach($aOptions AS $sKey => $aOption) {
-                if (!is_array($aOption)) {                    
-                    array_push($aTmpOptions,$aOption);
+            foreach ($aOptions as $sKey => $aOption) {
+                if (!is_array($aOption)) {
+                    array_push($aTmpOptions, $aOption);
                 } else {
-                    array_push($aTmpOptions,$sKey);
+                    array_push($aTmpOptions, $sKey);
                     $aOption["key"] = $sKey;
                     if (!$aOption["type"]) {
                         $aOption["type"] = "select";
@@ -226,13 +233,13 @@
         foreach ($aOptions as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
-                $oMform = $this->getFormField($aOption, $sKey, $oMform,$iId);
+                $oMform = $this->getFormField($aOption, $sKey, $oMform, $iId);
             }
         }
         return $oMform;
     }
 
-    public function getFormField($aOption, $sKey, $oMform,$iId)
+    public function getFormField($aOption, $sKey, $oMform, $iId)
     {
         switch ($aOption["type"]) {
             default:
@@ -265,7 +272,7 @@
                 foreach ($aData as $key => $value) {
                     if ($key === "") continue;
                     if ($key == $sDataDefault && $sDataDefault != "") {
-                        array_unshift($aKeyValue,',' . "Automatisch (".$value.")");
+                        array_unshift($aKeyValue, ',' . "Automatisch (" . $value . ")");
                     }
                     $aKeyValue[] = $key . ',' . $value;
                 }
@@ -323,7 +330,7 @@
         foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
             if ($sOptionsKey === "") {
                 if (rex::isBackend()) {
-                    throw new rex_exception("nvModuleSettings: empty data key in option ".$sKey);
+                    throw new rex_exception("nvModuleSettings: empty data key in option " . $sKey);
                 }
             }
         }
