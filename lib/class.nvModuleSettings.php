@@ -208,7 +208,7 @@
     public function getContentForm($oMform, $iId, $aOptions = array())
     {
 
-        if (count($aOptions)) {
+        if (isset($aOptions)) {
             $aTmpOptions = array();
             foreach ($aOptions as $sKey => $aOption) {
                 if (!is_array($aOption)) {
@@ -226,7 +226,7 @@
         }
 
 
-        if (!count($aOptions)) {
+        if (!isset($aOptions)) {
             $aOptions = $this->aSettings["contentOptions"];
         }
 
@@ -352,7 +352,7 @@
             }
         }
 
-        if (count($aDefaultData)) {
+        if (isset($aDefaultData)) {
             foreach ($aOption["data"] as $sDataKey => $sDataVal) {
                 $aDefaultData[$sDataKey] = $sDataVal;
             }
