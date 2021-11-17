@@ -178,7 +178,7 @@
     {
         $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
         $this->mf = new MForm();
-        $this->mf->addHtml('<a href="javascript:void(0)" class="btn btn-abort w-100 text-center nv-modulesettings-toggler" data-id="#nv-modulesettings-' . $iBlockId . '" style="width:100%"><strong><span class = "caret"></span> &nbsp; ' . $sLabel . '</strong> &nbsp; <span class = "caret"></span></a>');
+        $this->mf->addHtml('<a href="javascript:void(0)" class="btn btn-abort w-100 text-center nv-modulesettings-toggler-' . $iBlockId . '" data-id="#nv-modulesettings-' . $iBlockId . '" style="width:100%"><strong><span class = "caret"></span> &nbsp; ' . $sLabel . '</strong> &nbsp; <span class = "caret"></span></a>');
         $this->mf->addHtml('<div id="nv-modulesettings-' . $iBlockId . '" style="border: 1px solid #c1c9d4;border-top:none; padding: 20px;display:none"><br>');
 
         foreach ($this->aSettings["defaultOptions"] as $sKey) {
@@ -196,7 +196,7 @@
 
         $sForm .= '<script>';
         $sForm .= '$( document ).ready(function() {
-			$(".nv-modulesettings-toggler").click(function(){
+			$(".nv-modulesettings-toggler-' . $iBlockId . '").click(function(){
 				var iBlockId = $(this).attr("data-id");
 				$(iBlockId).slideToggle();
 			});
