@@ -1,14 +1,19 @@
 <?php class nvModuleSettings
 {
 
-
-    public function __construct($iModuleId = null)
+    public function __construct($iModuleId = 0)
     {
         $this->addon = rex_addon::get('nv_modulesettings');
-        $this->fileCore = $this->addon->getPath('lib/settings.json');
-        $this->fileProject = $this->addon->getDataPath('settings.json');
 
-        $this->iSettingsId = 9;
+        $this->sSettingsFilename = "modulesettings.json";
+
+        // true wenn noch alte CS (unter version 2) genutzt werden
+        $this->bDeprecated = false;
+        $this->iSettingsId = "20";
+        
+        $this->fileProject = $this->addon->getDataPath($this->sSettingsFilename);
+        $this->aSettings = [];
+        $this->settings = "";
 
         if ($iModuleId) {
             $this->iModuleId = $iModuleId;
@@ -17,7 +22,731 @@
         $this->getAllSettings();
     }
 
+    function initDeprecated() {
+        $this->bDeprecated = true;
+        $this->sSettingsFilename = "settings.json";
+        $this->iSettingsId = "9";
+        $this->fileProject = $this->addon->getDataPath($this->sSettingsFilename);
+        $this->fileCore = $this->addon->getPath('lib/'.$this->sSettingsFilename);
+        $this->aSettings = [];
+        $this->settings = "";
+        $this->getAllSettingsDeprecated();
+    }
+
     function getAllSettings()
+    {
+
+        if ($this)
+
+
+        if (file_exists($this->fileProject)) {
+            $sProject = $this->getJsonContent($this->fileProject);
+            $this->projectData = (json_decode($sProject, true));
+        }
+
+        if ($this->iModuleId) {
+            $sBaseDir = theme_path::base("private/redaxo/modules/");
+            $aDirs = glob($sBaseDir . '*', GLOB_ONLYDIR | GLOB_NOSORT | GLOB_MARK);
+
+            foreach ($aDirs as $sDir) {
+                if (strpos($sDir, "[" . $this->iModuleId . "]") !== false) {
+                    break;
+                }
+            }
+
+            if (file_exists($sDir . $this->sSettingsFilename)) {
+                $sModule = file_get_contents($sDir . $this->sSettingsFilename);
+                $this->moduleData = (json_decode($sModule, true));
+            }
+        }
+
+
+        if (isset($this->projectData["showOptions"])) {
+            if (count($this->projectData["showOptions"])) {
+                $this->aSettings["showOptions"] = $this->projectData["showOptions"];
+            }
+        }
+
+        if (isset($this->moduleData["showOptions"])) {
+            if (count($this->moduleData["showOptions"])) {
+                $this->aSettings["showOptions"] = $this->moduleData["showOptions"];
+            }
+        }
+
+
+        $this->aSettings["categories"] = array();
+        if (isset($this->projectData["categories"])) {
+            if (count($this->projectData["categories"])) {
+                foreach ($this->projectData["categories"] as $aCategory) {
+                    $sKey = $aCategory["key"];
+                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $aCategory["icon"]);
+                }
+            }
+        }
+
+        if (isset($this->moduleData["categories"])) {
+            if (count($this->moduleData["categories"])) {
+                foreach ($this->moduleData["categories"] as $aCategory) {
+                    $sKey = $aCategory["key"];
+                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $aCategory["icon"]);
+                }
+            }
+        }
+
+        // Hide Options in Module
+        if (isset($this->moduleData["hideOptions"])) {
+            foreach ($this->moduleData["hideOptions"] as $sKey) {
+                if (($iX = array_search($sKey, $this->aSettings["showOptions"])) !== false) {
+                    unset($this->aSettings["showOptions"][$iX]);
+                }
+            }
+        }
+
+        // Options
+        $aUsedKeys = [];
+        if (isset($this->projectData["options"])) {
+            if (count($this->projectData["options"])) {
+                foreach ($this->projectData["options"] as $aOption) {
+                    $sKey = $aOption["key"];
+                    if (!in_array($sKey, $aUsedKeys)) {
+                        $this->aSettings["options"][$sKey] = $aOption;
+                        array_push($aUsedKeys, $sKey);
+                    } else {
+                        foreach ($aOption as $sOptionKey => $mOptionVal) {
+                            if (isset($mOptionVal)) {
+                                $this->aSettings["options"][$sKey][$sOptionKey] = $mOptionVal;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        if (isset($this->moduleData["options"])) {
+            foreach ($this->moduleData["options"] as $aOption) {
+                $sKey = $aOption["key"];
+                if (!in_array($sKey, $aUsedKeys)) {
+                    $this->aSettings["options"][$sKey] = $aOption;
+                    array_push($aUsedKeys, $sKey);
+                } else {
+                    foreach ($aOption as $sOptionKey => $mOptionVal) {
+                        if (isset($mOptionVal)) {
+                            $this->aSettings["options"][$sKey][$sOptionKey] = $mOptionVal;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Kategorien aufbauen
+        $this->aSettings["options_in_categories"] = false;
+        foreach ($this->aSettings["showOptions"] as $sOption) {
+            $aOption = $this->aSettings["options"][$sOption];
+            $sCategory = $aOption["category"];
+            if ($sCategory != "") {
+                if (!isset($this->aSettings["categories"][$sCategory])) {
+                    $this->aSettings["categories"][$sCategory] = array("label" => $sCategory);
+                }
+                $this->aSettings["categories"][$sCategory]["showOptions"][] = $sOption;
+                $this->aSettings["options_in_categories"] = true;
+            }
+        }
+
+        if ($this->aSettings["options_in_categories"] == true) {
+            foreach ($this->aSettings["showOptions"] as $sOption) {
+                $aOption = $this->aSettings["options"][$sOption];
+                $sCategory = $aOption["category"];
+                if ($sCategory == "") {
+                    $sCategory = "nvmodulesettingsgeneral";
+                    if (!isset($this->aSettings["categories"][$sCategory])) {
+                        $this->aSettings["categories"][$sCategory] = array("label" => "Sonstige Einstellungen");
+                    }
+                    $this->aSettings["categories"][$sCategory]["showOptions"][] = $sOption;
+                }
+            }
+        }
+
+        if ($this->aSettings["options_in_categories"] == false) {
+            $this->aSettings["categories"] = array();
+            $this->aSettings["categories"]["nvmodulesettingsgeneral"] = array("label" => "Keine Kategorien verwendet");
+            foreach ($this->aSettings["showOptions"] as $sOption) {
+                $this->aSettings["categories"]["nvmodulesettingsgeneral"]["showOptions"][] = $sOption;
+            }
+        }
+    }
+
+    public function getOptions($sKey)
+    {
+        $aSelectData = $this->getSelectData($sKey);
+        if (isset($aSelectData)) {
+            $this->aSettings["options"][$sKey]["selectdata"] = $aSelectData;
+        }
+        return $this->aSettings["options"][$sKey];
+    }
+
+    public function getDefault($sKey)
+    {
+        if (isset($this->aSettings["options"][$sKey]["default"])) {
+            return $this->aSettings["options"][$sKey]["default"];
+        }
+    }
+
+    function getOptionLabel($sKey, $sValue)
+    {
+        return $this->aSettings["options"][$sKey]["selectdata"][$sValue];
+    }
+
+
+    function getSelectData($sKey)
+    {
+
+        $aOption = $this->aSettings["options"][$sKey];
+
+        $aData = array();
+
+        if (isset($aOption["data"])) {
+            foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
+                if (isset($aOption["default"])) {
+                    if ($sOptionsKey == $aOption["default"]) {
+                        $sOptionsKey = "nvmodulesettingsdefault";
+                        $sOptionsVal .= " " . $this->addon->i18n("nvmodulesettingsdefault_default_option");
+                    }
+                }
+                $aData[$sOptionsKey] = $sOptionsVal;
+            }
+        }
+
+        return $aData;
+    }
+
+
+    function buildForm($aSavedOptions = array())
+    {
+        $sForm = "";
+        $aUsedTypes = array();
+        $iTabRand = rand(0, 100) * rand(0, 100);
+        if (isset($this->aSettings["categories"])) {
+
+            if ($this->aSettings["options_in_categories"] == true) {
+                $sForm .= '<ul class="nav nav-tabs">';
+                $iX = 0;
+                foreach ($this->aSettings["categories"] as $aCategory) {
+                    if (isset($aCategory["showOptions"])) {
+                        $sForm .= '<li><a href="#nv-modulesettings-content-' . $iTabRand . '-' . $iX . '" data-toggle="tab">';
+                        if (isset($aCategory["icon"])) {
+                            $sForm .= ' <i class="' . $aCategory["icon"] . '" style="padding-right:10px"></i>';
+                        }
+                        $sForm .= $aCategory["label"] . '</a></li>' . PHP_EOL;
+                        $iX++;
+                    }
+                }
+                $sForm .= '</ul>';
+            }
+
+            $sForm .= '<div class="tab-content';
+            if ($this->aSettings["options_in_categories"] == true) {
+                $sForm .= ' options_in_categories';
+            } else {
+                $sForm .= ' no_options_in_categories';
+            }
+            $sForm .= '">';
+
+            $iX = 0;
+
+            foreach ($this->aSettings["categories"] as $aCategory) {
+                if (isset($aCategory["showOptions"])) {
+                    if ($this->aSettings["options_in_categories"] == true) {
+                        $sForm .= '<div class="tab-pane fade" id="nv-modulesettings-content-' . $iTabRand . '-' . $iX . '">';
+                    }
+                    $sForm .= '<div class="rex-form-group">';
+
+                    foreach ($aCategory["showOptions"] as $sKey) {
+                        $aOption = $this->aSettings["options"][$sKey];
+
+                        if (isset($aOption)) {
+                            if (count($aOption)) {
+
+                                if (!in_array($aOption["type"], $aUsedTypes)) {
+                                    array_push($aUsedTypes, $aOption["type"]);
+                                }
+
+                                if ($aOption["type"] != "html") {
+                                    $sForm .= '<dl class="rex-form-group form-group nv-modulesettings-form-group">' . PHP_EOL;
+                                }
+                                if ($aOption["label"] != "") {
+                                    $sForm .= '<dt><label for="">' . $aOption["label"];
+                                    if (isset($aOption["icon"])) {
+                                        $sForm .= ' <i class="' . $aOption["icon"] . '" style="padding-left:10px"></i>';
+                                    }
+                                    $sForm .= '</label></dt>' . PHP_EOL;
+                                }
+
+                                switch ($aOption["type"]) {
+                                    case "text":
+                                        $sClass = 'class="form-control"';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $sPlaceholder = '';
+                                        if (isset($aOption["placeholder"])) {
+                                            $sPlaceholder = 'placeholder="' . $aOption['placeholder'] . '"';
+                                        }
+                                        $sValue = "";
+                                        if (isset($aSavedOptions[$sKey])) {
+                                            $sValue = $aSavedOptions[$sKey];
+                                        } else if ($aOption["default"] != "") {
+                                            $sValue = $aOption["default"];
+                                        }
+                                        $sForm .= '<dd><input name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" type="text" ' . $sClass . ' value="' . $sValue . '" ' . $sPlaceholder . '></dd>' . PHP_EOL;
+                                        break;
+
+                                    case "textarea":
+                                        $sClass = 'class="form-control"';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $sPlaceholder = '';
+                                        if (isset($aOption["placeholder"])) {
+                                            $sPlaceholder = 'placeholder="' . $aOption['placeholder'] . '"';
+                                        }
+                                        $sValue = "";
+                                        if (isset($aSavedOptions[$sKey])) {
+                                            $sValue = $aSavedOptions[$sKey];
+                                        } else if ($aOption["default"] != "") {
+                                            $sValue = $aOption["default"];
+                                        }
+                                        $sForm .= '<dd><textarea name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" ' . $sClass . ' ' . $sPlaceholder . '>' . $sValue . '</textarea></dd>' . PHP_EOL;
+                                        break;
+
+                                    case "colorpicker":
+                                        $sClass = 'class="form-control"';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $sPlaceholder = 'placeholder="Bsp. #003366"';
+                                        if (isset($aOption["placeholder"])) {
+                                            $sPlaceholder = 'placeholder="' . $aOption['placeholder'] . '"';
+                                        }
+                                        $sValue = "";
+                                        if (isset($aSavedOptions[$sKey])) {
+                                            $sValue = $aSavedOptions[$sKey];
+                                        } else if ($aOption["default"] != "") {
+                                            $sValue = $aOption["default"];
+                                        }
+                                        $sForm .= '<dd><div class="input-group nv-modulesettings-colorinput-group"><input data-parsley-excluded="true" type="text" name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" value="' . $sValue . '" maxlength="7" ' . $sPlaceholder . ' pattern="^#([A-Fa-f0-9]{6})$" ' . $sClass . '><span class="input-group-addon nv-modulesettings-colorinput"><input type="color" value="' . @$aSavedOptions[$sKey] . '" pattern="^#([A-Fa-f0-9]{6})$" class="form-control"></span></div>' . PHP_EOL;
+                                        break;
+
+                                    case "select":
+                                        $sClass = 'class="selectpicker w-100"';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $aSelectData = $this->getSelectData($sKey);
+                                        $sForm .= '<dd><select name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" ' . $sClass . '>' . PHP_EOL;
+                                        foreach ($aSelectData as $sSelectKey => $sSelectValue) :
+                                            if (isset($aSavedOptions[$sKey])) {
+                                                $sSelected = ($sSelectKey == @$aSavedOptions[$sKey]) ? 'selected="selected"' : '';
+                                            } else {
+                                                $sSelected = ($sSelectKey == "nvmodulesettingsdefault") ? 'selected="selected"' : '';
+                                            }
+                                            $sForm .= '<option value="' . $sSelectKey . '" ' . $sSelected . '>' . $sSelectValue . '</option>' . PHP_EOL;
+                                        endforeach;
+                                        $sForm .= '</select></dd>' . PHP_EOL;
+                                        break;
+
+                                    case "checkbox":
+                                        $sClass = 'class=""';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $sChecked = ("1" == @$aSavedOptions[$sKey]) ? 'checked="checked"' : '';
+                                        $sForm .= '<dd><div class="checkbox toggle"><label><input type="checkbox" name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" value="1" ' . $sChecked . ' ' . $sClass . '></label></div></dd>' . PHP_EOL;
+                                        break;
+
+                                    case "radio":
+                                        $sClass = 'class=""';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        $sForm .= '<dd><div class="radio toggle switch">' . PHP_EOL;
+                                        $aSelectData = $this->getSelectData($sKey);
+                                        foreach ($aSelectData as $sSelectKey => $sSelectValue) :
+                                            $iRand = rand(0, 1000000) * rand(0, 100000);
+                                            if (isset($aSavedOptions[$sKey])) {
+                                                $sSelected = ($sSelectKey == @$aSavedOptions[$sKey]) ? 'checked="checked"' : '';
+                                            } else {
+                                                $sSelected = ($sSelectKey == "nvmodulesettingsdefault") ? 'checked="checked"' : '';
+                                            }
+                                            $sForm .= '<label for="' . $iRand . '">' . PHP_EOL;
+                                            $sForm .= '<input id="' . $iRand . '" name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" type="radio" value="' . $sSelectKey . '" ' . $sSelected . ' ' . $sClass . '/> ' . $sSelectValue . PHP_EOL;
+                                            $sForm .= '</label>';
+
+                                        endforeach;
+                                        $sForm .= '</div></dd>' . PHP_EOL;
+                                        break;
+
+                                    case "media":
+                                        $aArgs = array();
+                                        if (isset($aOption["preview"])) {
+                                            if ($aOption["preview"]) {
+                                                $aArgs["preview"] = "1";
+                                            }
+                                        }
+                                        if (isset($aOption["types"])) {
+                                            if ($aOption["types"]) {
+                                                $aArgs["types"] = $aOption["types"];
+                                            }
+                                        }
+                                        $iRand = rand(0, 1000000) * rand(0, 100000);
+                                        $sForm .= rex_var_media::getWidget($iRand, "REX_INPUT_VALUE[$this->iSettingsId][$sKey]", @$aSavedOptions[$sKey], $aArgs);
+                                        break;
+
+                                    case "medialist":
+                                        $aArgs = array();
+                                        if ($aOption["preview"]) {
+                                            $aArgs["preview"] = "1";
+                                        }
+                                        if ($aOption["types"]) {
+                                            $aArgs["types"] = $aOption["types"];
+                                        }
+                                        $iRand = rand(0, 1000000) * rand(0, 100000);
+                                        $sForm .= rex_var_medialist::getWidget($iRand, "REX_INPUT_VALUE[$this->iSettingsId][$sKey]", @$aSavedOptions[$sKey], $aArgs);
+                                        break;
+
+                                    case "link":
+                                        $aArgs = array();
+                                        $iRand = rand(0, 1000000) * rand(0, 100000);
+                                        $sForm .= rex_var_link::getWidget($iRand, "REX_INPUT_VALUE[$this->iSettingsId][$sKey]", @$aSavedOptions[$sKey], $aArgs);
+                                        break;
+
+                                    case "linklist":
+                                        $aArgs = array();
+                                        $iRand = rand(0, 1000000) * rand(0, 100000);
+                                        $sForm .= rex_var_linklist::getWidget($iRand, "REX_INPUT_VALUE[$this->iSettingsId][$sKey]", @$aSavedOptions[$sKey], $aArgs);
+                                        break;
+                                    case "customlink":
+                                        if (!rex_addon::get('mform')->isAvailable()) {
+                                            $sForm .= 'To use customlink please install addon mform';
+                                        } else {
+                                            $aArgs = array();
+                                            $iRand = rand(0, 100) * rand(0, 100);
+                                            $sForm .= rex_var_custom_link::getWidget($iRand, "REX_INPUT_VALUE[$this->iSettingsId][$sKey]", @$aSavedOptions[$sKey], $aArgs);
+                                        }
+                                        break;
+
+                                    case "html":
+                                        $sForm .= $aOption["text"];
+                                        break;
+
+                                    case "slider":
+                                        $sClass = 'class="form-control bootstap-slider"';
+                                        if (isset($aOption["class"])) {
+                                            $sClass = 'class="' . $aOption['class'] . '"';
+                                        }
+                                        if (!empty($aSavedOptions[$sKey])) {
+                                            $sValue = @$aSavedOptions[$sKey];
+                                        } else {
+                                            $sValue = $aOption["default"];
+                                        }
+                                        $sSliderMin = '';
+                                        if (isset($aOption["slider-min"])) {
+                                            $sSliderMin = 'data-slider-min="' . $aOption['slider-min'] . '"';
+                                        }
+                                        $sSliderMax = '';
+                                        if (isset($aOption["slider-max"])) {
+                                            $sSliderMax = 'data-slider-max="' . $aOption['slider-max'] . '"';
+                                        }
+                                        $sSliderRange = '';
+                                        if (isset($aOption["slider-range"]) && ($aOption["slider-range"] == 1)) {
+                                            $sSliderRange = 'data-slider-range="' . $aOption['slider-range'] . '"';
+                                        }
+                                        $sSliderStep = '';
+                                        if (isset($aOption["slider-step"]) && ($aOption["slider-step"] == 1)) {
+                                            $sSliderStep = 'data-slider-step="' . $aOption['slider-step'] . '"';
+                                        }
+                                        if (strpos($sValue, ',') !== false) {
+                                            $sSliderValue = 'data-slider-value="[' . $sValue . ']"';
+                                        } else {
+                                            $sSliderValue = 'data-slider-value="' . $sValue . '"';
+                                        }
+
+                                        $sSliderShowTooltip = 'data-slider-tooltip="always"';
+                                        if (isset($aOption["slider-tooltip"])) {
+                                            if ($aOption["slider-tooltip"] == "hover") {
+                                                $aOption["slider-tooltip"] = "show";
+                                            }
+                                            $sSliderShowTooltip = 'data-slider-tooltip="' . $aOption["slider-tooltip"] . '"';
+                                        }
+
+                                        $sForm .= '<dd><input name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" type="text" ' . $sClass . ' value="' . $sValue . '" data-slider-tooltip-split="true" ' . $sSliderMin . ' ' . $sSliderMax . ' ' . $sSliderRange . ' ' . $sSliderStep . ' ' . $sSliderValue . ' ' . $sSliderShowTooltip . ' data-provide="slider" ></dd>' . PHP_EOL;
+                                        break;
+                                }
+
+                                if ($aOption["type"] != "html") {
+                                    $sForm .= '</dl>' . PHP_EOL;
+                                }
+                            }
+                        }
+                    }
+
+
+
+                    $sForm .= '</div>';
+                    if ($this->aSettings["options_in_categories"] == true) {
+                        $sForm .= '</div>';
+                    }
+                    $iX++;
+                }
+            }
+            $sForm .= '</div>';
+            if ($this->aSettings["options_in_categories"] == true) {
+                $sForm .= '<script>$(function(){ $(\'a[href="#nv-modulesettings-content-' . $iTabRand . '-0"]\').tab("show"); });</script>';                    //immer ersten Tab einblenden
+
+            }
+            if (!count($aUsedTypes)) {
+                return;
+            }
+            return ($this->getFormWrapper($sForm));
+        }
+    }
+
+    public function getFormWrapper($sForm)
+    {
+
+        $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
+        $sHtml = '<div class="nv-modulesettings">';
+        $sHtml .= '<a href="javascript:void(0)" class="btn btn-abort w-100 nv-modulesettings-toggler nv-modulesettings-toggler-' . $iBlockId . '" data-id="#nv-modulesettings-' . $iBlockId . '"><div class="nv-modulesettings-toggler-left"><i class="rex-icon fa-cog"></i> &nbsp; Moduleinstellungen</div> <div class="nv-modulesettings-toggler-right"><i class="rex-icon fa-angle-down"></i></div></a>' . PHP_EOL;
+        $sHtml .= '<div id="nv-modulesettings-' . $iBlockId . '" class="nv-modulesettings-form">' . PHP_EOL;
+        $sHtml .= $sForm . PHP_EOL;
+        $sHtml .= '</div>' . PHP_EOL;
+        $sHtml .= '</div>' . PHP_EOL;
+        $sHtml .= '<script>' . PHP_EOL;
+        $sHtml .= '$( document ).ready(function() {
+			$(".nv-modulesettings-toggler-' . $iBlockId . '").click(function(){
+				var iBlockId = $(this).attr("data-id");
+                $(this).find(".nv-modulesettings-toggler-right i").toggleClass("fa-angle-down").toggleClass("fa-angle-up");
+				$(iBlockId).slideToggle();
+			});
+		})' . PHP_EOL;
+        $sHtml .= '</script>';
+        return $sHtml;
+    }
+
+    public function getSettings($aArr = [])
+    {
+
+        $aData = array();
+
+        if (isset($this->aSettings["showOptions"])) {
+            foreach ($this->aSettings["showOptions"] as $sKey) {
+                if ($this->aSettings["options"][$sKey]["type"] != "html") {
+                    $aData[$sKey] = "";
+
+                    if (!isset($aArr[$sKey]) or $aArr[$sKey] == "nvmodulesettingsdefault") {
+                        $aData[$sKey] = $this->getDefault($sKey);
+                    } else {
+                        $aData[$sKey] = $aArr[$sKey];
+                    }
+                }
+            }
+        }
+
+        $oData = json_decode(json_encode($aData), FALSE);
+        $this->settings = $oData;
+    }
+
+    public function getValue($sKey)
+    {
+        return $this->settings->{$sKey};
+    }
+
+    public function getValues()
+    {
+        return $this->settings;
+    }
+
+    public static function parseCustomLink($sLink = null)
+    {
+        if ($sLink == "") {
+            return;
+        }
+
+        // email
+        if (strpos($sLink, "mailto:") !== "false") {
+            $sEmail = str_replace("mailto:", "", $sLink);
+            if (filter_var($sEmail, FILTER_VALIDATE_EMAIL)) {
+                $aArr = array(
+                    "email" => $sEmail,
+                    "type" => "email",
+                    "source" => $sLink,
+                );
+                return $aArr;
+            };
+        }
+
+        // tel
+        if (strpos($sLink, "tel:") !== "false") {
+            $sNr = str_replace("tel:", "", $sLink);
+            if (filter_var($sNr, FILTER_VALIDATE_EMAIL)) {
+                $aArr = array(
+                    "number" => $sNr,
+                    "type" => "tel",
+                    "source" => $sLink,
+                );
+                return $aArr;
+            };
+        }
+
+        // external url
+        if (filter_var($sLink, FILTER_VALIDATE_URL)) {
+            $aArr = array(
+                "url" => $sLink,
+                "target" => "_blank",
+                "type" => "external_url",
+                "source" => $sLink,
+            );
+            return $aArr;
+        };
+
+
+
+        // internal url
+        if (filter_var($sLink, FILTER_VALIDATE_INT)) {
+            $aArr = array(
+                "url" => rex_getUrl($sLink),
+                "target" => "_self",
+                "type" => "internal_url",
+                "source" => $sLink,
+            );
+            return $aArr;
+        };
+
+        // media
+        $oMedia = rex_media::get($sLink);
+        if ($oMedia) {
+            $aArr = array(
+                "url" => $oMedia->getUrl(),
+                "type" => "media",
+                "media" => $oMedia,
+                "source" => $sLink,
+            );
+            return $aArr;
+        }
+
+        // other
+        $aArr = array(
+            "url" => $sLink,
+            "type" => "other",
+            "source" => $sLink,
+        );
+        return $aArr;
+    }
+
+    public function getJsonContent($sFile)
+    {
+        $sContent = "";
+        if (file_exists($sFile)) {
+            $sContent = file_get_contents($sFile);
+            json_decode($sContent);
+            if ($sContent && json_last_error() != "JSON_ERROR_NONE") {
+                if (rex::isBackend()) {
+                    throw new rex_exception("nvModuleSettings: json Error in File $sFile");
+                }
+            }
+        }
+        return $sContent;
+    }
+
+    function syncWithThemeAddon()
+    {
+        if (!rex_addon::get('theme')->isAvailable()) {
+            return;
+        }
+
+        $oTheme = rex_addon::get('theme');
+        $sThemePath = rex_path::base($oTheme->getProperty('theme_folder') . "/private/redaxo/modules/");
+
+        $sFile = $sThemePath . $this->sSettingsFilename;
+        $sFileOrigin = $this->addon->getDataPath($this->sSettingsFilename);
+        if (!file_exists($sFile) && file_exists($sFileOrigin)) {
+            copy($sFileOrigin, $sFile);
+        } else if (file_exists($sFile) && !file_exists($sFileOrigin)) {
+            copy($sFile, $sFileOrigin);
+        } else if (file_exists($sFile) && file_exists($sFileOrigin)) {
+            if (filectime($sFile) > filectime($sFileOrigin)) {
+                copy($sFile, $sFileOrigin);
+            } else {
+                copy($sFileOrigin, $sFile);
+            }
+        }
+    }
+
+    public function getBackendSummary()
+    {
+        if (!rex::isBackend()) {
+            return;
+        }
+        $sHtml = "";
+        $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
+        $sHtml .= '<br /><a href="javascript:void(0)" class="btn btn-abort w-100 text-center nv-modulesettings-backend-toggler nv-modulesettings-backend-toggler-' . $iBlockId . '" data-id="#nv-modulesettings-backend-' . $iBlockId . '" style="width:100%"><strong style="float:left">ModuleSettings</strong> &nbsp; <i class="fa fa-cog" style="float:right;padding-top:3px"></i></a><br />' . PHP_EOL;
+        $sHtml .= '<div class="nv-modulesettings-backend-options" id="nv-modulesettings-backend-' . $iBlockId . '"><br />' . PHP_EOL;
+
+        if (isset($this->aSettings["showOptions"])) {
+            $sHtml .= '<ul class="list-group">' . PHP_EOL;
+            foreach ($this->aSettings["showOptions"] as $sKey) {
+                $aOption = $this->aSettings["options"][$sKey];
+                $sLabel = $aOption["label"] . " (" . $sKey . ")";
+                $sValue = $this->getValue($sKey);
+                if ($aOption["data"][$sValue] != "") {
+                    $sValue .= " (" . $aOption["data"][$sValue] . ")";
+                }
+                $sHtml .= '<li class="list-group-item"><div class="row"><div class="col-12 col-lg-6" style="padding:0">' . $sLabel . '</div><div class="col-12 col-lg-6" style="padding:0">' . $sValue . '</div></div></li>' . PHP_EOL;
+            }
+            $sHtml .= '</ul>' . PHP_EOL;
+        }
+
+        $sHtml .= '</div>' . PHP_EOL;
+        $sHtml .= '<script>' . PHP_EOL;
+        $sHtml .= '$( document ).ready(function() {
+			$(".nv-modulesettings-backend-toggler-' . $iBlockId . '").click(function(){
+				var iBlockId = $(this).attr("data-id");
+				$(iBlockId).slideToggle();
+                console.log("click "+iBlockId);
+			});
+		})' . PHP_EOL;
+        $sHtml .= '</script>' . PHP_EOL;
+
+
+        #$sHtml .= "<pre>" . print_r($oData, 1) . "</pre>";
+
+
+        return $sHtml;
+    }
+
+    // ab hier deprecated
+
+    function getForm($sLabel = "Weitere Optionen") {
+        $this->initDeprecated();
+        return $this->getFormDeprecated($sLabel = "Weitere Optionen");
+    }
+
+    function getContentForm($oMform, $iId, $aOptions = array()) {
+        $this->initDeprecated();
+        return $this->getContentFormDeprecated($oMform, $iId, $aOptions = array());
+    }
+
+    function parseSettings($aArr, $iSettingsId = 0) {
+        $this->initDeprecated();
+        return $this->parseSettingsDeprecated($aArr, $iSettingsId = 0);
+    }
+
+    function parseContentSettings($aArr, $iSettingsId = 0) {
+        $this->initDeprecated();
+        return $this->parseContentSettingsDeprecated($aArr, $iSettingsId = 0);
+    }
+
+    function getAllSettingsDeprecated()
     {
         $this->aSettings = [];
 
@@ -150,31 +879,31 @@
         }
     }
 
-    public function getOptions($sKey)
+    public function getOptionsDeprecated($sKey)
     {
-        $aSelectData = $this->getSelectData($sKey);
+        $aSelectData = $this->getSelectDataDeprecated($sKey);
         if (isset($aSelectData)) {
             $this->aSettings["options"][$sKey]["selectdata"] = $aSelectData;
         }
         return $this->aSettings["options"][$sKey];
     }
 
-    public function getDefault($sKey)
+    public function getDefaultDeprecated($sKey)
     {
         return $this->aSettings["options"][$sKey]["default"];
     }
 
-    function getContentOptions()
+    function getContentOptionsDeprecated()
     {
         return $this->aSettings["contentOptions"];
     }
 
-    function getOptionLabel($sKey, $sValue)
+    function getOptionLabelDeprecated($sKey, $sValue)
     {
         return $this->aSettings["options"][$sKey]["selectdata"][$sValue];
     }
 
-    public function getForm($sLabel = "Weitere Optionen")
+    public function getFormDeprecated($sLabel = "Weitere Optionen")
     {
         $iBlockId = rand(0, 100000) . time() . rand(0, 10000000);
         $this->mf = new MForm();
@@ -184,7 +913,7 @@
         foreach ($this->aSettings["defaultOptions"] as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
-                $this->mf = $this->getFormField($aOption, $sKey, $this->mf, $this->iSettingsId);
+                $this->mf = $this->getFormFieldDeprecated($aOption, $sKey, $this->mf, $this->iSettingsId);
             }
         }
 
@@ -205,7 +934,7 @@
         return $sForm;
     }
 
-    public function getContentForm($oMform, $iId, $aOptions = array())
+    public function getContentFormDeprecated($oMform, $iId, $aOptions = array())
     {
 
         if (isset($aOptions)) {
@@ -233,18 +962,18 @@
         foreach ($aOptions as $sKey) {
             $aOption = $this->aSettings["options"][$sKey];
             if ($aOption) {
-                $oMform = $this->getFormField($aOption, $sKey, $oMform, $iId);
+                $oMform = $this->getFormFieldDeprecated($aOption, $sKey, $oMform, $iId);
             }
         }
         return $oMform;
     }
 
-    public function getFormField($aOption, $sKey, $oMform, $iId)
+    public function getFormFieldDeprecated($aOption, $sKey, $oMform, $iId)
     {
         switch ($aOption["type"]) {
             default:
             case "select":
-                $aData = $this->getSelectData($sKey);
+                $aData = $this->getSelectDataDeprecated($sKey);
 
                 $oMform->addSelectField($iId . ".0." . $sKey, $aData, ["label" => $aOption["label"]]);
                 return $oMform;
@@ -266,8 +995,8 @@
                 break;
 
             case "range":
-                $aData = $this->getSelectData($sKey);
-                $sDataDefault = $this->getDefault($sKey);
+                $aData = $this->getSelectDataDeprecated($sKey);
+                $sDataDefault = $this->getDefaultDeprecated($sKey);
                 $aKeyValue = [];
                 foreach ($aData as $key => $value) {
                     if ($key === "") continue;
@@ -288,7 +1017,7 @@
         }
     }
 
-    public function parseSettings($aArr, $iSettingsId = 0)
+    public function parseSettingsDeprecated($aArr, $iSettingsId = 0)
     {
         if (!$iSettingsId) {
             $iSettingsId = $this->iSettingsId;
@@ -296,35 +1025,35 @@
 
         $oData = new stdClass();
         foreach ($this->aSettings["defaultOptions"] as $sKey) {
-            $aOptions = $this->getOptions($sKey);
+            $aOptions = $this->getOptionsDeprecated($sKey);
             if ($aOptions["type"] == "media") {
                 $oData->{$sKey} = $aArr["REX_MEDIA_" . $iSettingsId] ? MEDIA . $aArr["REX_MEDIA_" . $iSettingsId] : "";
             } else {
-                $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefault($sKey);
+                $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefaultDeprecated($sKey);
             }
         }
 
         return $oData;
     }
 
-    public function parseContentSettings($aArr, $iSettingsId = 0)
+    public function parseContentSettingsDeprecated($aArr, $iSettingsId = 0)
     {
         if (!$iSettingsId) {
             $iSettingsId = $this->iSettingsId;
         }
         $oData = new stdClass();
         foreach ($this->aSettings["contentOptions"] as $sKey) {
-            $aOptions = $this->getOptions($sKey);
+            $aOptions = $this->getOptionsDeprecated($sKey);
             if ($aOptions["type"] == "media") {
                 $oData->{$sKey} = $aArr["REX_MEDIA_" . $iSettingsId] ? MEDIA . $aArr["REX_MEDIA_" . $iSettingsId] : "";
             } else {
-                $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefault($sKey);
+                $oData->{$sKey} = $aArr[$sKey] ? $aArr[$sKey] : $this->getDefaultDeprecated($sKey);
             }
         }
         return $oData;
     }
 
-    function getSelectData($sKey)
+    function getSelectDataDeprecated($sKey)
     {
         $aOption = $this->aSettings["options"][$sKey];
         foreach ($aOption["data"] as $sOptionsKey => $sOptionsVal) {
@@ -363,4 +1092,7 @@
 
         return $aData;
     }
+
+
+
 }

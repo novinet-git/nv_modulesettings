@@ -2,6 +2,10 @@
 
 Redaxo 5 Addon zum Verwalten von Design-Einstellungen für Module
 
+## Hinweis zu Breaking Changes (Version 2.0)
+Version 2.0 enthält einige Breaking Changes. Wer bisher die Version 1.2 genutzt hat kann zwar updaten, die neuen Funktionen greifen aber nur, wenn die Syntax und Methoden der Version 2.0 verwendet werden!
+
+
 ## Features
 
 - Verwaltung von wiederkehrenden Moduloptionen (z.B. Abstände, Breite, Hintergrundfarbe)
@@ -10,43 +14,43 @@ Redaxo 5 Addon zum Verwalten von Design-Einstellungen für Module
 - Es können Optionen für ein ganzes Projekt festgelegt werden
 - Es können Optionen für einzelne Module festgelegt werden
 - Es können Optionen überschrieben werden (z.B. im Projekt Abstand nach unten mb-5 aber bei einem speziellen Modul mb-3)
-- Optional können in mform weitere Optionen im Input über die settings.json ergänzt werden
+- Installation legt eine Beispieldatei redaxo/data/addons/nv_modulesettings/modulesettings.json.example an. Diese kann umbenannt werden (modulesettings.json) um beispielhafte Optionen einzublenden
 
 
 ## Konfiguration
 
 Das Addon benötigt die Addons "Developer" und "Theme".
-Wenn man das Addon für ein spezifisches Modul verwenden möchte, legt man in den Modulordner eine Datei settings.json ab. 
-
-Coresettings & Beispieldatei
-Beispiel-Datei (Coresettings) liegt im Addon-Ordner unter redaxo/src/addons/nv_modulesettings/lib/settings.json
+Wenn man das Addon für ein spezifisches Modul verwenden möchte, legt man in den Modulordner eine Datei modulesettings.json ab. 
 
 Projektweite Settings
-Liegt im Addon-Ordner unter redaxo/data/addons/nv_modulesettings/settings.json
+Liegt im Addon-Ordner unter redaxo/data/addons/nv_modulesettings/modulesettings.json
 
 Spezifische Modulsettings
-Datei settings.json im Modulordner theme/private/redaxo/modules/Modulordner anlegen
+Datei modulesettings.json im Modulordner theme/private/redaxo/modules/Modulordner anlegen
 
 
 ## Beispiel Input
 
 ```php
 $oSettings = new nvModuleSettings(REX_MODULE_ID);
-echo $oSettings->getForm();
+echo $oSettings->buildForm(rex_var::toArray("REX_VALUE[20]"));
 ```
 
 ## Beispiel Output
 
 ```php
 $oSettings = new nvModuleSettings(REX_MODULE_ID);
-$oSettings->settings = $oSettings->parseSettings(rex_var::toArray("REX_VALUE[9]")[0]);
+$oSettings->getSettings(rex_var::toArray("REX_VALUE[20]"))
 ```
-Nun kann auf alle Einstellungsvariablen über $oSettings->settings->marginBottom (oder einen anderen Key) zugegriffen werden.
+Nun kann auf alle Einstellungsvariablen über $oSettings->getValue(marginBottom) (oder einen anderen Key) zugegriffen werden.
+Alle Werte können über die Methode $oSettings->getValues() ausgegeben werden.
+Wenn die Methode getSettings() aufgerufen wurde, kann im Output auch am Ende die Methode getBackendSummary() ausgegeben werden.
+Diese zeigt eine Zusammenfassung aller Einstellungen des Moduls.
 
 
-## Beispiel Überschreiben von Core- oder Projektoptionen
+## Beispiel Überschreiben von Projektoptionen
 
-Abstandsdefinition im Core
+Abstandsdefinition im Projekt (redaxo/data/addons/nv_modulesettings/modulesettings.json)
 
 ```php
 {
@@ -65,68 +69,11 @@ Abstandsdefinition im Core
 }
 ```
 
-Überschreiben des Standardabstands für alle Module im gesamten Projekt (redaxo/data/addons/nv_modulesettings/settings.json)
-
-```php
-{
-	"key": "marginBottom",
-	"default": "mb-4"
-}
-```
-Überschreiben des Standardabstands für ein einzelnes Modul (theme/private/redaxo/modules/Modulordner/settings.json)
+Überschreiben des Standardabstands für ein einzelnes Modul (theme/private/redaxo/modules/Modulordner/modulesettings.json)
 
 ```php
 {
 	"key": "marginBottom",
 	"default": "mb-5"
 }
-```
-
-## Beispiel weitere Inhaltoptionen im Input (Contentoptions)
-
-Wenn man im direkten Input (außerhalb des Akkordeons) weitere Optionen (z.B. Farbe einer HR im Trenner-Modul) hinzufügen möchte, kann man das in der Modul-settings.json tun. Dazu muss der "Key" im Bereich "contentOptions" ergänzt werden.
-
-```php
-{
-	"defaultOptions" : [
-	],
-	"additionalOptions" : [
-	],
-	"hideOptions" : [
-	],
-	"contentOptions": [
-        "type"
-	],
-	"options": [
-		{
-			"key": "type",
-			"label": "Typ",
-			"data": {
-				"none": "Keine Linie",
-				"grey": "Graue Linie",
-				"red": "Rote Linie",
-				"greyFull": "Graue Linie (100% Hintergrundfarbe)"
-			},
-			"default": "red"
-		}
-	]
-}
-```
-
-Im Input des Moduls kann folgendermaßen auf diese "Contentoptions" zugegriffen werden:
-
-```php
-$id = 1;
-$mf = new MForm();
-$oSettings = new nvModuleSettings(REX_MODULE_ID);
-$mf = $oSettings->getContentForm($mf,$id);
-echo MBlock::show($id, $mf->show(), ["min" => 1, "max" => 1]);
-echo $oSettings->getForm();
-```
-
-Im Output kann folgendermaßen auf die Werte zugegriffen werden
-
-```php
-$oSettings = new nvModuleSettings(REX_MODULE_ID);
-$oContentsettings = $oSettings->parseContentSettings(rex_var::toArray("REX_VALUE[1]")[0], 1);
 ```
