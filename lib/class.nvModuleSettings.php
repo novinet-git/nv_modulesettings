@@ -79,7 +79,8 @@
             if (count($this->projectData["categories"])) {
                 foreach ($this->projectData["categories"] as $aCategory) {
                     $sKey = $aCategory["key"];
-                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $aCategory["icon"]);
+                    $sIcon = isset($aCategory["icon"]) ? $aCategory["icon"] : "";
+                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $sIcon);
                 }
             }
         }
@@ -88,7 +89,8 @@
             if (count($this->moduleData["categories"])) {
                 foreach ($this->moduleData["categories"] as $aCategory) {
                     $sKey = $aCategory["key"];
-                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $aCategory["icon"]);
+                    $sIcon = isset($aCategory["icon"]) ? $aCategory["icon"] : "";                    
+                    $this->aSettings["categories"][$sKey] = array("label" => $aCategory["label"], "icon" => $sIcon);
                 }
             }
         }
@@ -143,7 +145,7 @@
         $this->aSettings["options_in_categories"] = false;
         foreach ($this->aSettings["showOptions"] as $sOption) {
             $aOption = $this->aSettings["options"][$sOption];
-            $sCategory = $aOption["category"];
+            $sCategory = isset($aOption["category"]) ? $aOption["category"] : "";
             if ($sCategory != "") {
                 if (!isset($this->aSettings["categories"][$sCategory])) {
                     $this->aSettings["categories"][$sCategory] = array("label" => $sCategory);
@@ -156,7 +158,7 @@
         if ($this->aSettings["options_in_categories"] == true) {
             foreach ($this->aSettings["showOptions"] as $sOption) {
                 $aOption = $this->aSettings["options"][$sOption];
-                $sCategory = $aOption["category"];
+                $sCategory = isset($aOption["category"]) ? $aOption["category"] : "";
                 if ($sCategory == "") {
                     $sCategory = "nvmodulesettingsgeneral";
                     if (!isset($this->aSettings["categories"][$sCategory])) {
@@ -479,7 +481,7 @@
                                             $sSliderShowTooltip = 'data-slider-tooltip="' . $aOption["slider-tooltip"] . '"';
                                         }
 
-                                        $sForm .= '<dd><input name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" type="text" ' . $sClass . ' value="' . $sValue . '" data-slider-tooltip-split="true" ' . $sSliderMin . ' ' . $sSliderMax . ' ' . $sSliderRange . ' ' . $sSliderStep . ' ' . $sSliderValue . ' ' . $sSliderShowTooltip . ' data-provide="slider" ></dd>' . PHP_EOL;
+                                        $sForm .= '<dd><input name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" type="text" ' . $sClass . ' value="' . $sValue . '" data-slider-tooltip-split="true" ' . $sSliderMin . ' ' . $sSliderMax . ' ' . $sSliderRange . ' ' . $sSliderStep . ' ' . $sSliderValue . ' ' . $sSliderShowTooltip . '></dd>' . PHP_EOL;
                                         break;
                                 }
 
