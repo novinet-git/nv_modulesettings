@@ -771,7 +771,7 @@
             $aDirs = glob($sBaseDir . '*', GLOB_ONLYDIR | GLOB_NOSORT | GLOB_MARK);
 
             foreach ($aDirs as $sDir) {
-                if (strpos($sDir, "[" . $this->iModuleId . "]") !== false) {
+                if (file_exists($sDir.$this->iModuleId.".rex_id")) {
                     break;
                 }
             }
