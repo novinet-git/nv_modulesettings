@@ -58,6 +58,9 @@
                 $sModule = file_get_contents($sDir . $this->sSettingsFilename);
                 $this->moduleData = (json_decode($sModule, true));
             }
+
+            rex_fragment::addDirectory($sDir."fragments");
+
         }
 
 
