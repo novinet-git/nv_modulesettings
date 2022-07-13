@@ -1,6 +1,6 @@
 {
 	"showOptions" : [
-		"sliceType","range", "sliceBgColor", "sliceBgImage", "marginTop", "marginBottom", "paddingTop", "paddingBottom","paddingX","sliceClass","colWidth", "colAlign"
+		"sliceType","range", "sliceBgColor", "sliceBgImage", "groupMargin", "paddingTop", "paddingBottom","paddingX","sliceClass","colWidth", "colAlign"
 	],
 	"categories": [
 		{
@@ -14,6 +14,15 @@
 		}
 	],
 	"options": [
+		{
+			"category": "design",
+			"key": "group_margin",
+			"type": "group",
+			"label": "Außenabstand",
+			"icon": "",
+			"open": true,
+			"options": ["marginTop", "marginBottom"]
+		},	
 		{
 			"key": "sliceType",
 			"label": "Block Typ",

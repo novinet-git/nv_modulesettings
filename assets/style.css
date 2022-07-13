@@ -165,3 +165,59 @@
 .nv-modulesettings .slider-track {
     border: 1px solid #c1c9d4;
 }
+
+
+.nvmodulesettings-group {
+    margin-bottom: 20px;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading {
+    padding: 0px;
+    border-bottom: 1px solid #E0E0E0;
+	color: #CCC;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading a {
+    display: block;
+    position: relative;
+    font-weight: normal;
+	font-size: 1.10em;
+    padding: 12px 5px;
+	text-decoration: none;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading a, 
+.nvmodulesettings-group .nvmodulesettings-heading a:after {
+    color: #666;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading a:hover, 
+.nvmodulesettings-group .nvmodulesettings-heading a:hover:after, 
+.nvmodulesettings-group .nvmodulesettings-heading a[aria-expanded="true"],
+.nvmodulesettings-group .nvmodulesettings-heading a[aria-expanded="true"]:after,
+.nvmodulesettings-group .nvmodulesettings-heading a[aria-expanded="false"]:hover, 
+.nvmodulesettings-group .nvmodulesettings-heading a[aria-expanded="false"]:hover:after {
+    color: #4b9ad9;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading a:after {
+    position: absolute;
+    font-family: FontAwesome;
+    content: "\f078";
+    right: 10px;
+    font-weight: regular;
+}
+
+.nvmodulesettings-group .nvmodulesettings-heading a[aria-expanded="true"]:after {
+    position: absolute;
+    font-family: FontAwesome;
+    content: "\f077";
+    font-weight: regular;
+    right: 10px;
+}
+
+
+
+.nvmodulesettings-group .nvmodulesettings-body {
+    padding: 20px 5px 20px;
+}
