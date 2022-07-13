@@ -7,20 +7,18 @@ if (rex::isBackend()) {
     rex_view::addCssFile($this->getAssetsUrl('style.css?v=' . $this->getVersion()));
     rex_view::addJsFile($this->getAssetsUrl('rangeInput.js'));
 
-    $oSettings = new nvModuleSettings;
-    $oSettings->syncWithThemeAddon();
+    $oModuleSettings = new nvModuleSettings;
+    $oModuleSettings->syncWithThemeAddon();
 }
 
 
-
-
-
 rex_extension::register('SLICE_OUTPUT', function ($ep) {
-    $sSubject = (string) "<?php \$oSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
+    $sSubject = (string) "<?php \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
     $sSubject .= $ep->getSubject();
     return $sSubject;
 });
 
+/* Vorbereitung für neue EP
 rex_extension::register('STRUCTURE_CONTENT_MODULE_INPUT_ADD', function ($ep) {
     $iModuleId = (int) $ep->getParam("module_id");
     $oDb = rex_sql::factory();
@@ -42,8 +40,8 @@ rex_extension::register('STRUCTURE_CONTENT_MODULE_INPUT_ADD', function ($ep) {
     }
 
     $sSubject .= (string) "<?php\n
-    \$oSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
-    echo \$oSettings->buildForm();";
+    \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
+    echo \$oModuleSettings->buildForm();";
     return $sSubject;
 });
 
@@ -71,8 +69,8 @@ rex_extension::register('STRUCTURE_CONTENT_MODULE_INPUT_EDIT', function ($ep) {
     
 
     $sSubject .= (string) "<?php\n 
-    \$oSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
-    echo \$oSettings->buildForm();";
+    \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
+    echo \$oModuleSettings->buildForm();";
     return $sSubject;
 });
 
@@ -85,7 +83,7 @@ rex_extension::register('STRUCTURE_CONTENT_MODULE_OUTPUT', function ($ep) {
             return $ep->getSubject();
         }
     }
-    $sSubject = (string) "<?php \$oSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
+    $sSubject = (string) "<?php \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
     $sSubject .= $ep->getSubject();
 
     preg_match_all('/\<\?/ims',$ep->getSubject(),$aOpenMatches);
@@ -97,7 +95,7 @@ rex_extension::register('STRUCTURE_CONTENT_MODULE_OUTPUT', function ($ep) {
         }
     }
 
-    $sSubject .= (string) "\r\n<?php echo \$oSettings->getBackendSummary(); ?>";
+    $sSubject .= (string) "\r\n<?php echo \$oModuleSettings->getBackendSummary(); ?>";
     return $sSubject;
 });
 
@@ -114,14 +112,15 @@ rex_extension::register('GRIDBLOCK_CONTENT_MODULE_INPUT', function ($ep) {
     }
 
     $sSubject .= (string) "<?php\n
-    \$oSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
-    echo \$oSettings->buildForm();";
+    \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID,rex_var::toArray(\"REX_VALUE[20]\"));\n
+    echo \$oModuleSettings->buildForm();";
     return $sSubject;
 });
-
+*/
 rex_extension::register('GRIDBLOCK_CONTENT_MODULE_OUTPUT', function ($ep) {
-    $sSubject = (string) "<?php \$oSettings = new nvModuleSettings(REX_MODULE_ID); \$oSettings->getSettings(rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
+    $sSubject = (string) "<?php \$oModuleSettings = new nvModuleSettings(REX_MODULE_ID); \$oModuleSettings->getSettings(rex_var::toArray(\"REX_VALUE[20]\")); ?>\r\n";
     $sSubject .= $ep->getSubject();
+    return $sSubject;
     
     preg_match_all('/\<\?/ims',$ep->getSubject(),$aOpenMatches);
     preg_match_all('/\?\>/ims',$ep->getSubject(),$aClosedMatches);
@@ -131,6 +130,6 @@ rex_extension::register('GRIDBLOCK_CONTENT_MODULE_OUTPUT', function ($ep) {
             $sSubject .= (string) "?>\r\n";
         }
     }
-    $sSubject .= (string) "\r\n<?php echo \$oSettings->getBackendSummary(); ?>";
+    $sSubject .= (string) "\r\n<?php echo \$oModuleSettings->getBackendSummary(); ?>";
     return $sSubject;
 });
