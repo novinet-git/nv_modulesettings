@@ -543,7 +543,7 @@
                                         }
 
                                         $aSelectData = $this->getSelectData($sKey);
-                                        $sForm .= '<dd><select name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" ' . $sClass . ' ' . $sDisabled . '>' . PHP_EOL;
+                                        $sForm .= '<dd><select name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" ' . $sClass . ' ' . $sDisabled . ' data-live-search="true">' . PHP_EOL;
                                         foreach ($aSelectData as $sSelectKey => $sSelectValue) :
                                             $sSelected = '';
                                             if (isset($aSavedOptions[$sKey])) {

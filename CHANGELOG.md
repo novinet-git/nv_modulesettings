@@ -3,6 +3,9 @@
 
 Changelog
 ---------
+<b>Version 2.4.1</b>
+- Fix für Selectfelder (livesearch)
+
 <b>Version 2.4.0</b>
 - Neue Möglichkeit addOptions
 
