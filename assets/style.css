@@ -148,8 +148,14 @@
 .nv-modulesettings .tooltip.bs-tooltip-top {
     margin-top: -24px;
 }
+.nv-modulesettings .slider {
+    display: block;
+}
+
 .nv-modulesettings .slider.slider-horizontal {
     margin-top: 10px;
+    width: auto;
+    min-width: 210px;
 }
 .nv-modulesettings .slider-track,
 .nv-modulesettings .slider-track .slider-selection,

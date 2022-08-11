@@ -57,7 +57,7 @@
             $aDirs = glob($sBaseDir . '*', GLOB_ONLYDIR | GLOB_NOSORT | GLOB_MARK);
 
             foreach ($aDirs as $sDir) {
-                if (strpos($sDir, "[" . $this->iModuleId . "]") !== false) {
+                if (file_exists($sDir.$this->iModuleId.".rex_id")) {
                     break;
                 }
             }
@@ -80,9 +80,17 @@
             }
         }
 
-        if (isset($this->projectData["showOptions"])) {
-            if (count($this->projectData["showOptions"])) {
-                $this->aSettings["showOptions"] = $this->projectData["showOptions"];
+        if (!isset($this->moduleData["ignoreProjectOptions"])) {
+            if (isset($this->projectData["showOptions"])) {
+                if (count($this->projectData["showOptions"])) {
+                    $this->aSettings["showOptions"] = $this->projectData["showOptions"];
+                }
+            }
+
+            if (isset($this->projectData["addOptions"])) {
+                if (count($this->projectData["addOptions"])) {
+                    $this->aSettings["showOptions"] = array_merge($this->projectData["addOptions"], $this->aSettings["showOptions"]);
+                }
             }
         }
 
@@ -90,8 +98,22 @@
             if (count($this->moduleData["showOptions"])) {
                 $this->aSettings["showOptions"] = $this->moduleData["showOptions"];
             }
+
+            // Standardoptionen aus Projekt ins Modul ignorieren
+            if (!isset($this->moduleData["ignoreProjectOptions"]) && isset($this->projectData["showOptions"])) {
+                foreach ($this->projectData["showOptions"] as $sOption) {
+                    if (!in_array($sOption, $this->aSettings["showOptions"])) {
+                        $this->aSettings["showOptions"][] = $sOption;
+                    }
+                }
+            }
         }
 
+        if (isset($this->moduleData["addOptions"])) {
+            if (count($this->moduleData["addOptions"])) {
+                $this->aSettings["showOptions"] = array_merge($this->moduleData["addOptions"], $this->aSettings["showOptions"]);
+            }
+        }
 
         $this->aSettings["categories"] = array();
 
@@ -756,7 +778,7 @@
                 if ($this->aSettings["options"][$sKey]["type"] != "html") {
                     $aData[$sKey] = "";
 
-                    if (!isset($aArr[$sKey]) or $aArr[$sKey] == "nvmodulesettingsdefault" OR $this->aSettings["options"][$sKey]["disabled"]) {
+                    if (!isset($aArr[$sKey]) or $aArr[$sKey] == "nvmodulesettingsdefault" or $this->aSettings["options"][$sKey]["disabled"]) {
                         $aData[$sKey] = $this->getDefault($sKey);
                     } else {
                         $aData[$sKey] = $aArr[$sKey];
