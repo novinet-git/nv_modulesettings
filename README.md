@@ -187,6 +187,32 @@ Optionen können zu Gruppen zusammengefasst werden. Diese Gruppen werden als Akk
 }
 ```
 
+## Weitere Attribute (z.B. data-Attribute) für Select-Felder
+
+Wenn weitere Attribute übergeben werden sollen, muss der angezeigte Wert als "label" übergeben werden. Die anderen Werte werden in die Option übernommen
+
+```php
+{
+	"key": "marginBottom",
+	"label": "Block Außenabstand Unten",
+	"type": "select",
+	"data": {
+		"mb-0": "Kein",
+		"mb-1": "Sehr klein",
+		"mb-2": {
+					"label": "Klein",
+					"data-thumbnail": "/media/icon-chrome.png",
+					"data-icon": "glyphicon glyphicon-eye-open",
+					"data-subtext": "subtext"
+				},
+		"mb-3": "Mittel",
+		"mb-4": "Groß",
+		"mb-5": "Sehr groß"
+	},
+	"default": "mb-3"
+}
+```
+
 ## nvModuleSettings für ein Addon deaktivieren
 
 Im Ordner des Moduls eine leere modulesettings.ignore.json ablegen (theme/private/redaxo/modules/Modulordner/modulesettings.ignore.json)

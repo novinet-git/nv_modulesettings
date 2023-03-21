@@ -3,6 +3,9 @@
 
 Changelog
 ---------
+<b>Version 2.5.0</b>
+- Selectfelder können jetzt um Data-Attribute ergänzt werden (siehe Readme)
+
 <b>Version 2.4.1</b>
 - Fix für Selectfelder (livesearch)
 

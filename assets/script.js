@@ -1,5 +1,5 @@
 // nvModuleSettings
-// v2.0
+// v2.5
 
 $(function(){
 

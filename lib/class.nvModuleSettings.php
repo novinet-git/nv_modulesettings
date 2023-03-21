@@ -57,7 +57,7 @@
             $aDirs = glob($sBaseDir . '*', GLOB_ONLYDIR | GLOB_NOSORT | GLOB_MARK);
 
             foreach ($aDirs as $sDir) {
-                if (file_exists($sDir.$this->iModuleId.".rex_id")) {
+                if (file_exists($sDir . $this->iModuleId . ".rex_id")) {
                     break;
                 }
             }
@@ -394,7 +394,7 @@
 
     function buildForm(?array $aSavedOptions = array())
     {
-        if (!count($aSavedOptions)) {
+        if (isset($aSavedOptions) && !count($aSavedOptions)) {
             $aSavedOptions = $this->aSavedOptions;
         }
 
@@ -546,6 +546,19 @@
                                         $sForm .= '<dd><select name="REX_INPUT_VALUE[' . $this->iSettingsId . '][' . $sKey . ']" ' . $sClass . ' ' . $sDisabled . ' data-live-search="true">' . PHP_EOL;
                                         foreach ($aSelectData as $sSelectKey => $sSelectValue) :
                                             $sSelected = '';
+                                            $sSelectLabel = "";
+                                            $sSelectData = "";
+                                            if (is_array($sSelectValue)) {
+                                                foreach ($sSelectValue as $sSelectValueKey => $sSelectValueValue) {
+                                                    if ($sSelectValueKey == "label") {
+                                                        $sSelectLabel = $sSelectValueValue;
+                                                    } else {
+                                                        $sSelectData .= $sSelectValueKey . '="' . $sSelectValueValue . '" ';
+                                                    }
+                                                }
+                                            } else {
+                                                $sSelectLabel = $sSelectValue;
+                                            }
                                             if (isset($aSavedOptions[$sKey])) {
                                                 if ($sSelectKey == @$aSavedOptions[$sKey] or ($sSelectKey == "nvmodulesettingsdefault" && $aOption["default"] == @$aSavedOptions[$sType][$sKey])) {
                                                     $sSelected = 'selected="selected"';
@@ -556,7 +569,7 @@
                                             } else {
                                                 $sSelected = ($sSelectKey == "nvmodulesettingsdefault") ? 'selected="selected"' : '';
                                             }
-                                            $sForm .= '<option value="' . $sSelectKey . '" ' . $sSelected . '>' . $sSelectValue . '</option>' . PHP_EOL;
+                                            $sForm .= '<option value="' . $sSelectKey . '" ' . $sSelected . ' ' . $sSelectData . '>' . $sSelectLabel . '</option>' . PHP_EOL;
                                         endforeach;
                                         $sForm .= '</select></dd>' . PHP_EOL;
                                         break;
@@ -818,6 +831,7 @@
             if (filter_var($sEmail, FILTER_VALIDATE_EMAIL)) {
                 $aArr = array(
                     "email" => $sEmail,
+                    "url" => $sLink,
                     "type" => "email",
                     "source" => $sLink,
                 );
@@ -831,6 +845,7 @@
             if (filter_var($sNr, FILTER_VALIDATE_EMAIL)) {
                 $aArr = array(
                     "number" => $sNr,
+                    "url" => $sLink,
                     "type" => "tel",
                     "source" => $sLink,
                 );
@@ -889,7 +904,7 @@
         if (file_exists($sFile)) {
             $sContent = file_get_contents($sFile);
             json_decode($sContent);
-            if ($sContent && json_last_error() != "JSON_ERROR_NONE") {
+            if ($sContent && (json_last_error() != "JSON_ERROR_NONE" && json_last_error() != "0")) {
                 if (rex::isBackend()) {
                     throw new rex_exception("nvModuleSettings: json Error in File $sFile");
                 }
@@ -958,7 +973,11 @@
                 $sLabel = $aOption["label"] . " (" . $sKey . ")";
                 $sValue = $this->getValue($sKey);
                 if ($aOption["data"][$sValue] != "") {
-                    $sValue .= " (" . $aOption["data"][$sValue] . ")";
+                    if (is_array($aOption["data"][$sValue])) {
+                        $sValue .= " (" . $aOption["data"][$sValue]["label"] . ")";
+                    } else {
+                        $sValue .= " (" . $aOption["data"][$sValue] . ")";
+                    }
                 }
                 if ($aOption["label"]) {
                     $sHtml .= '<li class="list-group-item"><div class="row"><div class="col-12 col-lg-6" style="padding:0">' . $sLabel . '</div><div class="col-12 col-lg-6" style="padding:0">' . $sValue . '</div></div></li>' . PHP_EOL;
